@@ -1,0 +1,117 @@
+#Kafka common props
+
+kafka_log_path: "{{ deployment_base_path }}/kafka_logs"
+zookeeper_port: 2181
+kafka_port: 9092
+number_of_nodes: "{{ replication_factor }}"
+zookeeper_log_path: "{{ deployment_base_path }}/zookeper_logs"
+application_name: kafka
+kafka_version: "2.13-3.0.0"
+path_to_zookeeper_properties: "{{ deployment_base_path }}/{{ application_name }}_{{ kafka_version }}/config/zookeeper.properties"
+path_to_server_properties: "{{ deployment_base_path }}/{{ application_name }}_{{ kafka_version }}/config/server.properties"
+replication_factor: 1
+
+#replication_factor: 3
+
+kafka_mode: "singlenode_kafka1"
+
+#topic tink decrypted password
+#topic ACL users's password
+topic_producer_user_pass: "{{ hostvars['DUMMY_HOST']['topic_client_password'] }}"
+topic_consumer_user_pass: "{{ hostvars['DUMMY_HOST']['topic_client_password'] }}"
+topic_stmt_producer_user_pass: "{{ hostvars['DUMMY_HOST']['topic_client_password'] }}"
+topic_ums_producer_user_pass: "{{ hostvars['DUMMY_HOST']['topic_client_password'] }}"
+topic_oms_producer_user_pass: "{{ hostvars['DUMMY_HOST']['topic_client_password'] }}"
+topic_connect_producer_user_pass: "{{ hostvars['DUMMY_HOST']['topic_client_password'] }}"
+topic_connect_consumer_user_pass: "{{ hostvars['DUMMY_HOST']['topic_client_password'] }}"
+topic_interest_user_pass: "{{ hostvars['DUMMY_HOST']['topic_client_password'] }}"
+topic_sfm_pass: "{{ hostvars['DUMMY_HOST']['topic_client_password'] }}"
+
+##################################################### kafkaconnect Parameters ###################################################
+#Kafkaconnect common props
+# kafkaconnect application name and version
+application_name_kafkaconnect: confluent
+kafkaconnect_version: "7.0.1"
+
+# user defined source oracle db details
+oracle_ip: "{{ hostvars[groups['installSchema'][0]].ansible_ssh_host }}"
+#kafkaconnect_source_db_url: "jdbc:oracle:thin:@{{ oracle_ip }}:{{ mobiquity_database_port }}:{{ mobiquity_database_sid }}"
+kafkaconnect_source_db_url: "{{ db_connection_string }}"
+kafkaconnect_source_db_user: "{{ CONNECTORS_DB_USER }}"
+kafkaconnect_source_db_pwd: "{{ CONNECTORS_DB_PASSWORD }}"
+
+# user defined source oracle user profile service schema db details of user and pwd
+kafkaconnect_source_db_userprofile_user: "{{ kafkaconnect_source_db_user }}"
+kafkaconnect_source_db_userprofile_pwd: "{{ hostvars['DUMMY_HOST']['install_mobiquity_database_password'] }}"
+
+# user defined source oracle user authentication service schema db details of user and pwd
+kafkaconnect_source_db_userauth_user: "{{ kafkaconnect_source_db_user }}"
+kafkaconnect_source_db_userauth_pwd: "{{ hostvars['DUMMY_HOST']['install_mobiquity_database_password'] }}"
+
+# user defined source oracle sfm service schema db details of user and pwd
+kafkaconnect_source_db_sfm_user: "{{ kafkaconnect_source_db_user }}"
+kafkaconnect_source_db_sfm_pwd: "{{ hostvars['DUMMY_HOST']['install_mobiquity_database_password'] }}"
+
+# user defined source oracle notification service schema db details of user and pwd
+kafkaconnect_source_db_notification_user: "{{ notification_database_username }}"
+kafkaconnect_source_db_notification_pwd: "{{ hostvars['DUMMY_HOST']['notification_db_password'] }}"
+
+# user defined source oracle jigsaw service schema db details of user and pwd
+kafkaconnect_source_db_jigsaw_user: "{{ mobiquity_jigsaw_database_username }}"
+kafkaconnect_source_db_jigsaw_pwd: "{{ hostvars['DUMMY_HOST']['mobiquity_jigsaw_database_install_password'] }}"
+
+#buds
+kafkaconnect_source_db_buds_user: "{{ BUDS_DATABASE_USERNAME }}"
+kafkaconnect_source_db_buds_pwd: "{{ hostvars['DUMMY_HOST']['buds_db_password'] }}"
+
+# sink db details
+postgress_ip: "{{ hostvars[groups['postgres'][0]].ansible_ssh_host }}"
+#kafkaconnect_sink_db_url: "{{ reporting_db_connection_string }}?currentSchema={{ mobiquity_database_reporting_user }}"
+kafkaconnect_sink_db_url: "{{ reporting_db_connection_string }}"
+
+kafkaconnect_sink_db_user: "{{ mobiquity_database_reporting_user }}"
+kafkaconnect_sink_db_pwd: "{{ hostvars['DUMMY_HOST']['reporting_db_password'] }}"
+
+#Schema registry url
+schemaregistry_servers: "http://svc-kafka.comviva.com1:8081"
+# kafkaconnect schema registry port
+schemaregistry_port: 8081
+# kafkaconnect connector-distbuted port
+kafkaconnect_port: 8083
+##zookeeper_servers: "svc-kafka1"
+##broker_servers: "{{ hostvars[groups['kafka'][0]].ansible_ssh_host + ':9092'}}"
+##kafka_servers: "PLAINTEXT://svc-kafka1:9092"
+##kafka_servers_acl: "svc-kafka1:9092"
+kafka_service_ip: "svc-kafka.comviva.com1"
+
+
+
+#kafka_servers: "{{ 'PLAINTEXT://' + hostvars[groups['kafka'][0]].ansible_ssh_host + ':9092,' + 'PLAINTEXT://' + hostvars[groups['kafka'][1]].ansible_ssh_host + ':9092,' + 'PLAINTEXT://' + hostvars[groups['kafka'][2]].ansible_ssh_host + ':9092'}}"
+
+#kafka_servers_acl: "{{ 'SASL_PLAINTEXT://' + hostvars[groups['kafka'][0]].ansible_ssh_host + ':9092,' + 'SASL_PLAINTEXT://' + hostvars[groups['kafka'][1]].ansible_ssh_host + ':9092,' + 'SASL_PLAINTEXT://' + hostvars[groups['kafka'][2]].ansible_ssh_host + ':9092'}}"
+
+#zookeeper_servers: "{{ hostvars[groups['kafka'][0]].ansible_ssh_host + ':2181,' + hostvars[groups['kafka'][1]].ansible_ssh_host + ':2181,' + hostvars[groups['kafka'][2]].ansible_ssh_host + ':2181'}}"
+
+#broker_servers: "{{ hostvars[groups['kafka'][0]].ansible_ssh_host + ':9092,' + hostvars[groups['kafka'][1]].ansible_ssh_host + ':9092,' + hostvars[groups['kafka'][2]].ansible_ssh_host + ':9092'}}"
+
+
+
+zookeeper_servers: "svc-kafka.comviva.com1"
+
+broker_servers: "{{ hostvars[groups['kafka'][0]].ansible_ssh_host + ':9092'}}"
+
+kafka_servers: "PLAINTEXT://svc-kafka.comviva.com1:9092"
+
+kafka_servers_acl: "svc-kafka.comviva.com1:9092"
+
+
+
+########## Kafka performance configuration when TPS is higher than 100
+## default value is 1073741824 but for higher TPS mention 2073741824
+TOPIC_SEGMENT_BYTES: 1073741824
+## default value is 604800000 but for higher TPS mention 100000
+TOPIC_SEGMENT_MS: 604800000
+group_initial_rebalance_delay_ms: 0
+
+kafka_segment_bytes: "{{ TOPIC_SEGMENT_BYTES }}"
+kafka_segment_ms: "{{ TOPIC_SEGMENT_MS }}"
