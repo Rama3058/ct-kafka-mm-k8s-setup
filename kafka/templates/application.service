@@ -1,0 +1,10 @@
+[Unit]
+Description=Mobiquity Kafka Server 
+After=network.target
+[Service]
+Type=forking
+ExecStart={{ deployment_base_path }}/{{ application_name }}_{{ kafka_version }}/bin/startStop.sh
+ExecStop={{ deployment_base_path }}/{{ application_name }}_{{ kafka_version }}/bin/startStop.sh {{shutdown_timeout_in_seconds}}
+User={{ application_user }}
+[Install]
+WantedBy=multi-user.target

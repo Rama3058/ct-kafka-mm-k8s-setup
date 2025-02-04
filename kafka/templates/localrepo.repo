@@ -1,0 +1,6 @@
+[localrepo]
+name=Unixmen Repository
+baseurl=http://{{ local_repo_ip }}:{{ httpd_port }}/local-repo/
+gpgcheck=0
+enabled=1
+proxy=_none_

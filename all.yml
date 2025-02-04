@@ -1,0 +1,554 @@
+PLATFORM_NAME: "qa"
+
+application_user: "mobiquity"
+DEPLOY_ENV_TYPE: "vm"
+deployment_base_path: "/home/mobiquity//"
+deployment_type: "multinode"
+DEPLOY_MODE: "pipeline"
+
+tps_val: 10
+requested_tps: "{{ tps_val }}"
+
+ENABLE_ACL: "true"
+acl_enable: "{{ ENABLE_ACL }}"
+
+########################### Database Params ###################
+oracle_username: "oracle"
+ORACLE_USERNAME: "{{ oracle_username }}"
+
+DB_TYPE: "O"
+REPORTING_DB_TYPE: "O"
+
+DEFAULT_POSTGRES_DB: postgres
+default_tablespacename: temp
+
+db_server_login_allowed: "true"
+skip_user_and_tablespace_creation: "false"
+SKIP_USER_AND_TABLESPACE_CREATION: "{{ skip_user_and_tablespace_creation }}"
+
+mobiquity_pg_db: "{{ PLATFORM_NAME }}_main_mobiquity"
+mobiquity_pg_reporting_db: "{{ PLATFORM_NAME }}_reporting_mobiquity"
+
+##mobiquity_database_host: "svc-postgres-main"
+mobiquity_database_host: "svc-oracle"
+
+##mobiquity_reporting_database_host: "svc-postgres-reporting"
+mobiquity_reporting_database_host: "svc-oracle-reporting"
+
+mobiquity_database_port: "1522"
+mobiquity_reporting_database_port: "1522"
+
+reporting_tablespace_path: "/home/ora19c/oradata/datafiles/repce1/"
+
+mobiquity_database_sid: "amgce1"
+mobiquity_reporting_database_sid: "repce1"
+
+DB_SID: "{{ mobiquity_database_sid }}"
+
+db_connection_string: "jdbc:oracle:thin:@{{ mobiquity_database_host }}:{{ mobiquity_database_port }}:{{ mobiquity_database_sid }}"
+##db_connection_string: "jdbc:postgresql://{{ mobiquity_database_host }}:{{ mobiquity_database_port }}/{{ mobiquity_pg_db }}"
+
+mobiquity_database_url: "{{ db_connection_string }}"
+
+##reporting_db_connection_string: "jdbc:postgresql://{{ mobiquity_reporting_database_host }}:{{ mobiquity_reporting_database_port }}/{{ mobiquity_pg_reporting_db }}"
+reporting_db_connection_string: "jdbc:oracle:thin:@{{ mobiquity_reporting_database_host }}:{{ mobiquity_reporting_database_port }}:{{ mobiquity_reporting_database_sid }}"
+
+db_dialect_tomcat: "org.hibernate.dialect.PostgreSQLDialect"
+db_driver_tomcat: "{{ postgres_driver }}"
+
+DB_INITIAL_POOLSIZE: 5
+DB_MAX_CONNECTIONS: 5
+db_size_high: "16G"
+db_size_low: "8G"
+
+read_only_user_password: rouser
+read_only_user: rouser
+
+#################################################################
+
+address_catalogue_id: 3336dcac-309b-4599-9993-24a0a030b657
+advance_days_notification: 5
+ALLOWED_DOMAIN: "125.16.139.20|qamobiquitypay.comviva.com|172.25.49.185|localhost"
+PUBLIC_DOMAINNAME: "qamobiquitypay.comviva.com"
+
+allowed_failed_count: 3
+ALLOWED_REFERER_DOMAIN: "{{ ALLOWED_DOMAIN }}|{{ DOMAINNAME }}"
+
+app_bkp_dir: "{{ deployment_base_path }}/{{ config_subpath }}/backup/"
+
+atm_catalogue_id: 9c1347e0017609f61c8e5c59820001ae
+auditadminlog_topic_name: audit-admin-log
+audit_elasticsearch_password: "elastic"
+audit_elasticsearch_username: "elastic"
+audit_elk_index_pattern: audit-*
+audit_elk_proxy_enabled: false
+
+AutoExtendSwitch: 'OFF'
+autopay_db_ip: "{{ mobiquity_database_host }}"
+autopay_db_password: "{{ hostvars['DUMMY_HOST']['install_mobiquity_database_password'] }}"
+autopay_db_port: "{{ mobiquity_database_port }}"
+autopay_db_sid: "{{ mobiquity_database_sid }}"
+
+autopay_process_notification_scheduler_enabled: true
+autopay_process_notification_scheduling_delay: 600000
+autopay_process_scheduler_batch_size: 100
+autopay_process_scheduler_enabled: true
+autopay_process_scheduling_delay: 600000
+banner_catalogue_id: 68727edc-eb26-41f6-8b62-5a429936bbc7
+bearer_code: "MOBILE"
+blockcard_catalogue_id: fbb64003-518e-4add-9b12-7f0a7cf77ec7
+bms_db_ip: "svc-mongodb"
+bms_db_port: "{{ mongodb_port }}"
+bms_service_db_password: vmmigration_maindb
+bms.service.host.url: "http://{{ bms_ip }}:{{ bms_port }}/bms"
+buds_database_alias_name: "{{ General_Alias_Name }}"
+
+buds_db_encrypted_password: "{{ General_Encrypted_password }}"
+buds_db_keystore_password: "{{ General_keystore_key_password }}"
+#BUDS_DB_PASSWORD: "{{ General_Encrypted_password }}"
+BUDS_DB_SCRIPTS_PATH: "{{ ORACLE_HOME_DIR_INSTALLSCHEMA }}/BUDS/"
+BUDS_DB_TYPE: "{{ DB_TYPE }}"
+BUDS_DB_USER: "{{ BUDS_DB_USERNAME }}"
+BUDS_DB_USERNAME: "{{ PLATFORM_NAME }}_buds"
+buds_host_id: 2
+
+BUDS_TABLE_SPACE_NAME: "BUDS_DEMO_DATA_TABLE_SPACE_01"
+#bundle_type: "common"  -  for dbxp + mobiquitypay
+#bundle_type: "mobiquitypay"  -  for mobquitypay only
+bundle_type: "common"
+callback_url_password: mobiquity
+callback_url_username: ecocash
+card_type_catalogue_id: b3e5342d-c5e2-4fba-a2e2-329f0fd266fb
+categoryChecker_topic_name: categoryChecker
+CHURN_PAGINATION_SIZE: 15
+CHURN_USER_LOG_FILE_LOCATION: "/usr/local/tomcat/temp"
+client_default_service_roles: "read,write"
+clubbed_scheduler: "N"
+#config dir name/path:
+config_encrypt_key: "{{ application_user }}"
+config_subpath: configurations
+configuration_service: "config_server"
+consul_enabled: false
+consul_host: localhost
+consul_port: 8500
+CORE_CONFIG_CONTAINER_NAME_EIG: "TcatServer-9.0.62"
+CORE_CONFIG_SFM_SERVER_IP: '"{{ load_balancer_ip }}":"{{ jigsaw_port }}"'
+
+##CPS Related JKS
+##CRON JOB PARAMETERS need to update for deleting elasticsearch index 
+cronjob_param: "true"
+currency_conversion_catalogue_id: "b09239ba-e634-4261-8175-c6eab0ad2c72"
+custom_header_allowed: "true"
+custom_log_path: "{{ deployment_base_path }}"
+daily_partition_end_date: 2024-12-31
+daily_partition_start_date: 2023-11-01
+daily_statement_topic_name: DLY_STMT
+daily_statement_users_topic_name: DLY_STMT_USERS
+DATABASE_HOSTNAME: "{{ postgresdb_ip }}"
+DATABASE_PORT: "{{ postgresdb_port }}"
+database_type_tomcat: "postgres"
+#dateFormat for user_profile_service component
+day: "*"
+
+DIR_NAME_FOR_SCRIPTS: "mobiquitypay_schema_scripts"
+dispute_catalogue_id: 5dc036cf-3afe-4073-99ab-c6792a3e0ad0
+dms_db_port: "{{ mongodb_port }}"
+dms_public_download_url: "qamobiquitypay.comviva.com"
+dms_service_database_name: "dms_{{ PLATFORM_NAME }}"
+dms_service_db_password: "vmmigration_maindb"
+dms_service_db_username: "dmsuser_{{ PLATFORM_NAME }}"
+dms_service_db_rusername: "dms_ruser_{{ PLATFORM_NAME }}"
+dms_service_db_rpassword: "vmmigration_maindb_read"
+DMS_TEMP_DOCUMENT_EXPIRE_AFTER_SECONDS: 86400
+document_location: "{{ ftp_location }}/tmp/dms/"
+documenttype_catalogue_id: d07a1fd2-8279-4704-8754-93279f927e41
+domainChecker_topic_name: domainChecker
+DOMAINNAME: "qamobiquitypay.comviva.com"
+EDP_CONSUL_ENABLED: false
+EDP_CONSUL_HEALTHCHECK_INTERVAL: 30
+EDP_CONSUL_HOST: localhost
+EDP_CONSUL_PORT: 8500
+EDP_CONSUL_SERVICE_NAME: edp
+EDP_LOGGING_FILE: ./logs/edp.log
+EDP_LOGGING_FILE_MAXFILESIZE: 25MB
+EDP_LOGGING_FILE_MAXHISTORY: 5
+EDP_LOGGING_FILE_TOTALSIZECAP: 50MB
+EDP_LOGGING_LEVEL_COM_COMVIVA_MFS: INFO
+EDP_LOGGING_LEVEL: INFO
+EDP_RABBITMQ_ADDRESSES: "{{ rabbitmq_cluster }}"
+EDP_RABBITMQ_HOST: "{{ rabbitmq_host }}"
+EDP_RABBITMQ_PASSWORD: "{{ rabbitmq_password }}"
+EDP_RABBITMQ_USERNAME: "{{ rabbitmq_username }}"
+EDP_RABBITMQ_VHOST: "{{ rabbitmq_vhost }}"
+EDP_VAULT_PORT: 6015
+
+EIG_BANK2_INTERFACE_IP2:
+EIG_BANK_INTERFACE_IP:
+EIG_CORE_CONFIG_DB_PASSWORD: "{{ hostvars['DUMMY_HOST']['mobiquity_eig_database_password'] }}"
+EIG_CORE_CONFIG_DB_USER: "{{ mobiquity_eig_database_username }}"
+eig_oracle_tablespace_path: "{{ oracle_tablespace_path }}"
+eig_skip_user_and_tablespace_creation: "{{ skip_user_and_tablespace_creation }}"
+elastic_max_ram: -Xmx3g
+elastic_min_ram: -Xms3g
+
+employmenttype_catagloue_id: 126693d1-080f-41a5-9f5b-38b9504669d9
+ems_database_host: "{{ mobiquity_database_host }}"
+ems_database_port: "{{ mobiquity_database_port }}"
+ems_database_sid: "{{ mobiquity_database_sid }}"
+ems_db_server_login_allowed: "{{ db_server_login_allowed }}"
+ems_oracle_tablespace_path: "{{ oracle_tablespace_path }}"
+ems_oracle_username: "{{ oracle_username }}"
+ems_skip_user_and_tablespace_creation: "{{ skip_user_and_tablespace_creation }}"
+endpoint_max_rate: 100
+environment_name: native
+environment_type: "ENVIRONMENTTYPE"
+#environment_type: "onprem"
+#example format user_profile_dateFormat: ddMMyyyy
+##example: /home/mobiquity/privatekeystore.jks
+#ex: audit_elasticsearch_password: elastic
+#ex: audit_elasticsearch_username: elastic
+#ex: audit_elk_index_pattern: perf-reg-audit-*
+#ex: audit_elk_port: 9200
+#ex: audit_elk_proxy_enabled: false
+fcm_conf_auth_provider_x509_cert_url: https://www.googleapis.com/oauth2/v1/certs
+fcm_conf_auth_uri: https://accounts.google.com/o/oauth2/auth
+fcm_conf_client_email: firebase-adminsdk-bibj2@mobiquitypay-fcm.iam.gserviceaccount.com
+fcm_conf_client_id: 115285153018673042532
+fcm_conf_client_x509_cert_url: https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-bibj2%40mobiquitypay-fcm.iam.gserviceaccount.com
+fcm_conf_private_key: -----BEGIN PRIVATE KEY-----\nMIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQC1rGj3ISWW8j/i\nOiuV6n0wFIKwdGym37A0pnsf2Yuj04YQBRv1f/abW8sgeAN3w644UzT8NPPI5mVX\nkdeJBsyHWRFHi1hH/wDyh9x41WE+STqUwu12GUfLDUvoyVzFlmwpC/ZJSXn0mXg1\n8fEpJfN22EiMbVsW/6zAbLaeFxARBJXRmIa6hDjw1A/1AvNcQxURiBLvmNQuLPnF\nRym3pz69ZSMXTAGKP4UnOYrpSP15qxrSg/a0CAVVHW9cNJYUff/dW4IvOAUDCjHB\nJzgEjcHAJsIIl2coqsh8J0DVOa2MusKjsF86dOQI78Sa2j0ITARrHflgy7eKFuWL\nBV0LnuyBAgMBAAECgf9+t5M/TM97Sd1lXk2oc7Z+ItBFY++lNcEh+D1JKeRMkO2h\nnu6xfl/0XUKBkzRYBRUwFFmQ0R55srpdKky8NxHSFj4HORqKnUN752fQoIUDfPBv\ncsdO6LM63jtkU49yAknPF5jh5W47PhCrD+a2XNJEwvdXe69di1hjn3CBNHTwaKTl\nqNcUAE58E9x1txjU/G44+qS4FqdrAcfZB9Sg034GU6fZJhpGsIPFSmrICfVDYPXS\n5gNr35/cqCbNPK17ItNXQHKD2oS/DveNRCNhzm3sX2hq3pbFk/HvILc/1+XGoP88\nFFrYPvRoEDE16uP0GVgsP173UzThF1RJz/hWOAECgYEA5a2G0A4zKXIUz7TB4uYE\ndBwX/a8SMN1KMHmo6nPgpXHCU+2vV1/q6/jCEU3CLPr2NE/xSQ7m/lcg5MstPKm5\nI8YX8ocdehMRogoMyKsfPrf/wey9Oe0beeRVWfIL62PWjN8t307JF+UsdLkVaHRH\nIqnUNpbs0SqrODN+9pVbE4ECgYEAyn5+JzvpSNy6oiKTPWAsJvoML9lqxhK9C/18\nHvVqfek9p+8FqXdrY5DF4OhhdufHINIqQPG5SgmAJqCZs/ajzeB+jknbO9pED5oY\ndcR/t6imH1K9lWtZO8JHEaAozHj1vVsGcsSMdGCrER/i+Mi4vSpDKC7usQi0Z+Rc\nAVp8WQECgYEAizRONkG0/pS3SmBq9wOkhV8Vp1r5soYc1h6Wo2sSKBQ3zLiNgm6P\nKvA9Z1Fys+JzYKdnPXl7xYG3XRRL2a2gma8Ripwb4IY4NLbUorccm93XdIjw82/j\nLFCY7ogGc2eyfPUzj1noBcSP2jrnX8TB7J90EJYO+INc/RYxCHDjn4ECgYEArbwL\nttPTWt1vD48Er2MlXqeo7yDmWF1Zb8EjzlgX70G/0ablP7ojHEDpVgdrIB7KnaFT\n+Xar2BcAqaOfXGWfsxMK4kAB5n9lZ9F5bQmT3trG9RcDbAC3hesxGLFGb/DUPour\no6p5K5yJCV9HWNa2ki6BgieKScBDMOQgAFVHXQECgYBoj+/uK+fVF5KDbtwGPVGC\n5v8LFBXzHAbQqJTYHHSa1j5oIb1kM/bbdN3ZgoIHiG3kJQNPAf0VQRBBjeP+iQVR\nd6vVNFyyLR2i+Jd2ggb8inLhnRDHdv8+R2P8C0Ce68EnToq1KVzkiAfoKi4rfYvz\nxhn6ga1OnSKDMVqHZviVEQ==\n-----END PRIVATE KEY-----\n
+fcm_conf_private_key_id: 1486ef0af4de1264d560f7f8deb077dbb0eedb01
+fcm_conf_project_id: mobiquitypay-fcm
+fcm_conf_token_uri: https://oauth2.googleapis.com/token
+fcm_conf_type: service_account
+#For example public_key: -----BEGIN PUBLIC KEY----- MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEApsT2zq7zXrrjcwujFVj3 fC0N8bD7p6Y/2PQx66PJkSAg15jNPA8lqdojvKDu8JC2121S3xTxoS8G2BIQIQWS KURj6yU9U7dVCnHyEIpgg/cF5735//q2I5sgmFzBV1UdokqgNGJ/zusWWFPrJKw8 4Ys3fhETa3QJ0emnWFNNSoR2XaCX6vydqQgXfI5JGR3nziruCcREtPX/pZlRPRsj mtxc5bsO92BQuPfBaSbW+nT1/pkJbIJOmSvFqHbtIFePZgOvqGxfT0FzA2GmB1S3 qCjwusNzwKHUxBekO3Lj+hu0eJhsePl+8wUrJX99tTi932mUMiv4GLWt/PYV8mM7 RQIDAQAB -----END PUBLIC KEY-----
+ftp_location: "{{ deployment_base_path }}/storage"
+General_Alias_Name: SCHEMA_1QGxA
+########################### GENERAL DB DETAILS AND TINK ENCRYPTION VARIABLES ######
+General_Encrypted_password: AVs0jc99S8liTm2aWjx6//hAFHN7AJnHZU+utI1bGM2lqfQVvbNGaY8ELwZOkhJap4dB
+General_keystore_key_password: c8a4ba359067e473
+########################## GENERAL POSTGRES DETAILS #########################
+############################ GENERAL PROPERTIES ############################
+#Generaly it is always /home/oracle
+generic_tablespace_path: "/home/ora19c/oradata/datafiles/amgce1/"
+goal_type_catalogue_id: 3eced062-2eb5-4f09-92eb-93b0ecb918cf
+gradeChecker_topic_name: gradeChecker
+groupRoleChecker_topic_name: groupRoleChecker
+#haproxy deployment specific configuration param:
+hour: 11
+http_proxy: "HTTPPROXY"
+#http_proxy: "http://test1:Alpha%401234@172.19.7.14:8080"
+https_cert_dest_path: "/etc/ssl/certs"
+https_cert_name: "mobiquity-{{ PLATFORM_NAME }}.crt"
+https_certs_path: "Multinode_{{ PLATFORM_NAME }}/"
+https_enabled: "true"
+jigsaw_https_enabled: "false"
+jigsaw_https_domain: "jigsaw.comviva.com"
+https_key_name: "mobiquity-{{ PLATFORM_NAME }}.key"
+#https mode enable for security enhancements. Default value is 'false'. Make it 'true' to enable https temrination at nginx(reverse proxy) and krakend.
+#https mode enable for security enhancements. Default value is 'false'. Make it 'true' to enable https temrination at nginx(reverse proxy) and krakend.
+https_pem_name: "mobiquity-{{ PLATFORM_NAME }}.pem"
+idgenerator_ip: "{{ load_balancer_ip }}"
+inputsbyemploymenttype_catalogue_id: 0bfc0e29-bc10-40e1-bdfa-c96eb6e8f3ec
+instrument_vault_auth_host: "{{ instrument_vault_host_id }}"
+instrument_vault_auth_type: "{{ instrument_vault_host_auth_type }}"
+instrument_vault_auth_value: "{{ instrument_vault_host_auth_value }}"
+instrument_vault_default_bank: 701
+instrument_vault_host_auth_type: KEY
+instrument_vault_host_auth_value: 45317340a447346b5ba8299b03b17c5ecbd63de3
+instrument_vault_host_id: 2
+instrument_vault_type_bank: 603
+instrument_vault_type_id: 603
+instrument_vault_type_wallet: 604
+interestrates_catalogue_id: 4f77c250-8aa7-4d54-8ba8-0d42d6879ce0
+IS_DB_SCRIPTS_REQD: Y
+IS_INSERT_SAMPLE_DATA: N
+IS_KAFKA_INSTALLATION_REQD: 'N'
+is_prometheus_enabled: true
+is_ticketgenerator_enabled: false
+#is_ticketgenerator_enabled: true
+IS_TICKET_SERVER_ENABLED: N
+IS_TINK_COMPUTATION_REQD: 'N'
+
+jigsaw_bulk_scheduler_enable: false
+### JMX EXPORTER PORTS FOR TOMCAT SERVICES ###
+jmxPort_eig: 19087
+jmxPort_menuManager: 19085
+jmxPort_menuManagerUI: 19086
+jmxPort_oldTxn: 19080
+jmxPort_web: 19081
+########### Kafka , KSL , Notification consumer properties ################
+## kafka server IP or hostname (EX: svc-schema)
+country_timezone: "Asia/Kolkata"
+kafka_timezone: "{{ country_timezone }}"
+kafka_common_partitions: 3
+
+#Kafka topic name
+################################# KAFKA TOPIC NAMES ######################################
+##keep the jks file name as privatekeystore.jks, as we have more jks files.
+keyset_name: "{{ deployment_base_path }}/{{ PLATFORM_NAME }}/mobiquitypay-{{ PLATFORM_NAME }}.json"
+keystore_password: c8a4ba359067e473
+############################## KRAKEND DETAILS ####################################
+krakend_eig_port: 10036
+############ Limiting ram usage for elasticsearch ##########
+LIQUIBASE_HOME_DIR_INSTALLSCHEMA: "{{ deployment_base_path }}{{ PLATFORM_NAME }}/liquibase"
+LIQUIBASE_LOCAL_USER: "{{ application_user }}"
+liveReportsOnly_enable: 'false'
+###################### Incase of multinode deployment ###################
+load_balancer_ip: svc-lb
+###################### Incase of singlenode deployment ###################
+load_balancer_ui_ip: "ui-host"
+loaninterest_catalogue_id: 2cd9acba-ad8c-49cd-bfd7-6e4e0d012a7a
+loanpurpose_catalogue_id: 46da086c-03ed-426f-a05b-e6a18cacd8c1
+loantype_catalogue_id: ada9813d-444c-49df-a36f-27b381f92446
+locale_currency_mapping: "101-en-US,102-en-IN,103-de-DE"
+locator_catalogue_id: f0d89861-3e99-494d-b8e8-21ddea072b89
+logs_storage_path: /tmp
+############################################### MAINDBBUS #######################################################
+max_jvm_heap: "-Xmx2048M"
+mbw_context: mbw
+mdslog_topic_name: mds_log
+#Mention the OS version of application servers, Note all the servers must be on same OS version
+menu_db_server_login_allowed: "{{ db_server_login_allowed }}"
+#Menu Management ports 
+############################ MENU MANAGER Details ######################
+menu_oracle_tablespace_path: "{{ oracle_tablespace_path }}/MENU_TRANS_DATA_01.dbf"
+menu_skip_user_and_tablespace_creation: "{{ skip_user_and_tablespace_creation }}"
+merchant_callback_url:
+MIG_END_DATE:
+MIG_START_DATE:
+minute: 30
+mobiquity_business_database_pass: "{{ hostvars['DUMMY_HOST']['install_mobiquity_database_password'] }}bus"
+mobiquity_business_database_user: "{{ PLATFORM_NAME }}_maindbbus"
+mobiquity_eig_database_host: "{{ mobiquity_database_host }}"
+mobiquity_eig_database_port: "{{ mobiquity_database_port }}"
+mobiquity_eig_database_sid: "{{ mobiquity_database_sid }}"
+mobiquity_eig_oracle_username: "{{ oracle_username }}"
+mobiquity_menu_database_host: "{{ mobiquity_database_host }}"
+mobiquity_menu_database_port: "{{ mobiquity_database_port }}"
+mobiquity_menu_database_sid: "{{ mobiquity_database_sid }}"
+mobiquity_menu_oracle_username: "{{ oracle_username }}"
+
+############################Mobiquity Oracle Install schema details#################################
+mobiquity_spandan_database_type: "MAINO"
+mobiquity_statement_database_type: "STATEMENTO"
+
+################################################### MONDO DB PROPERTIES ###########################################
+mongodb_base_dir: "{{ MONGO_DB_HOME_DIR }}"
+#mongo db home directory path
+MONGO_DB_HOME_DIR: "/mondata"
+mongodb_port: 27017
+mongo_db_user: mongod
+month: "*"
+#monthly transaction table date range to create table and daily partition(eg: give 36 month table date range from 2017-01-01 to 2019-12-31)
+month_partition_end_date: 2024-12-31
+month_partition_start_date: 2023-11-01
+#Mostly no need to change but if in case oracle service is installed with some other name by dba then provide that. for example ora19c then value will be ora19c 
+#Never define this variable before db_connection_string variable
+#### New Params ####
+##new Variable for Tomcat Updated version:
+non_cloud_components: [config_server]
+non_cloud_enabled: True
+
+################################ NO NEED TO CHANGE #################################
+#no need to change below IP
+#no need to change below values until recommended by the core team
+no_notif_partitions: "{{ kafka_common_partitions }}"
+no_of_days: 3
+no_of_records_to_process_per_batch: 20
+no_sfm_partitions: "{{ kafka_common_partitions }}"
+notification_database_host_ip: "{{ mobiquity_database_host }}"
+notification_database_port: "{{ mobiquity_database_port }}"
+notification_database_sid: "{{ mobiquity_database_sid }}"
+####Notification DB Details ####
+notification_db_server_login_allowed: "{{ db_server_login_allowed }}"
+
+######################## Notification Details ##############################
+notification_oracle_tablespace_path: "{{ oracle_tablespace_path }}"
+notification_oracle_username: "{{ oracle_username }}"
+
+############################################## NOTIFICATION Properties ################################
+notification_simulator_ip: svc-eig
+notification_simulator_port: 10099
+notification_skip_user_and_tablespace_creation: "{{ skip_user_and_tablespace_creation }}"
+############################### NOT IN USE WILL BE REMOVED ########################################
+no_txns_downstream_events_partitions: "{{ kafka_common_partitions }}"
+no_txns_partitions: 32
+online_merchant_payment_timeout: 5000
+#only used by sfm role to set this springboot property.
+# only while doing alter for monthly header and items table date range (eg: '2019-06-01' to '2019-10-31')
+OPEN_JDK_NAME: "OpenJDK1.8.0_272"
+ORACLE_HOME_DIR_INSTALLSCHEMA: "/home/{{ oracle_username }}"
+ORACLE_HOME_DIR_NOTIFICATION_INSTALLSCHEMA: "{{ ORACLE_HOME_DIR_INSTALLSCHEMA }}"
+#oracle listner port in case of oracle db
+oracle_tablespace_path: "{{ generic_tablespace_path }}"
+os_version: 9
+#Parameter to enable vault in mobiquityPay, allowed values: true/false
+# Parameter to select db type for statement service
+payout_catalogue_id: f3366cda-d9f3-4f5a-80be-84f6bd1a5dd3
+postgres_base_dir: "/home/pgdb"
+##################### Pentaho DB details #######################
+pentaho_ip: "{{ hostvars[groups['pentaho'][0]]}}"
+pentaho_port: 6060
+pentaho_postgres_port: "{{ DATABASE_PORT }}"
+PERSISTENCE_PORT: 6007
+pe_service_database_name: pe-dbxp
+pe_service_db_password: password
+pe_service_db_username: pe-dbxp-user
+#PG_PARTITION_DATE: format should be: YYYY-MM-DD
+PG_PARTITION_DATE: "2023-11-01"
+postgres_datasource_class: "org.postgresql.ds.PGSimpleDataSource"
+postgresdb_dbname: "{{ POSTGRES_DEFAULT_DB }}"
+postgresdb_password: "{{ read_only_user_password }}"
+postgresdb_port: REPORTINGDBPORT
+postgresdb_user: "{{ read_only_user }}"
+POSTGRES_DEFAULT_DB: "postgres"
+postgres_dialect: "org.hibernate.dialect.PostgreSQLDialect"
+postgres_driver: "org.postgresql.Driver"
+POSTGRES_LINUX_USER: "{{ POSTGRES_USERNAME }}"
+#postgres listner port in case of postgres
+#### Postgres migration changes
+POSTGRES_PASSWORD: "postgres"
+POSTGRES_PORT: "{{ postgresdb_port }}"
+POSTGRES_USERNAME: "pgdb"
+pricingConfigFile: "{{ config_repo_base_dir }}/pricing_configuration.json"
+private_key_alias:
+private_key_keystore_key_password:
+private_key_source_path: "{{ deployment_base_path }}/{{ PLATFORM_NAME }}/privatekeystore.jks"
+privaye_key_keystore_password: 3c23bc6c3c854179
+privte_key_entry_keystore_path: "{{ deployment_base_path }}/privatekeystore.jks"
+professiontype_catalogue_id: 625796b4-ba43-45c1-a294-4615dcf7dd16
+proxy_enabled: false
+#PSQL_PATH: /pdisk1/postgres/bin/
+PSQL_PATH: "/pg_home/postgres/bin/"
+public_key: -----BEGIN PUBLIC KEY----- MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAv5ZXol6lK6DW1PApJHTe f/mqyVHR1Mtb7FxLc6OqYaiiow9J3IYjzPbt6fKxJpAZqEN4SxcuIGYaogCG76ivhBA6ZDQ1nCBtvuz28CO0AO95JYK+vPgmjA2CbYTdxe1ngu0CXv4Nw5CFN+0wJt4I 0/1NGjV5oOZBOURFNxIm/JZ4Td7Rb4zLsdz1ShySB8H61VToPy6vBeKHnU6R1mW4 ity2tIprShMXSt0+5kiIY62HFbDXp3vmpsQh26Z+HyjcJRVjrQOOuf+ezj4cNCJW oHewGoagSMqHpAAn4OJtGm1qvfr6/apgG5rzJwTzJDs50BXz7ViJ//JVkfOzBw68 ewIDAQAB -----END PUBLIC KEY-----
+#Put "Y"  if db scripts is required to be executed and "N" otherwise.
+#Put "Y" if you want the sample hosts and event types to be inserted, else it will be a blank database with only the required default data inserted
+QUARTZ_DELEGATE: "org.quartz.impl.jdbcjobstore.PostgreSQLDelegate"
+range_date_format: "dd/MM/yyyy"
+#Recommended values:Upto 20TPS set value as: "-Xmx1024M"
+#redis password #for example redis_password: password [do not change this]
+#redis password #for example redis_port: 6379
+redis_password: password
+################################## REDIS PROPERTIES ########################################
+referral_db_server_login_allowed: "{{ db_server_login_allowed }}"
+referral_oracle_tablespace_path: "{{ oracle_tablespace_path }}"
+referral_oracle_username: "{{ oracle_username }}"
+####################### Referral Service details #########################
+referral_skip_user_and_tablespace_creation: "{{ skip_user_and_tablespace_creation }}"
+#registartion eig URL's for sync call
+relationship_catalogue_id: 0426c039-47cc-4204-b808-93c2b23b5f35
+remote_loging_port: 514
+
+RsyslogIP: "{{ hostvars[groups['rsyslogremoteserver'][0]].ansible_ssh_host }}"
+rsyslog_required: "false"
+#rsyslog_required to true, if not required then make it false
+
+################### RSYSLOG server properties ################
+SA_PORT: 6008
+sasl_mechanism: PLAIN
+schema_registry_host:
+security_protocol: SASL_PLAINTEXT
+service_flow_config_server_path: "services"
+#Set jvm heap as per the tps required
+#####Set  values as 10 for 10tps, 50 for 50tps, 100 for 100tps and 500 for 500 tps
+SHELL_POSTFIX: vmfresh
+
+############################Spandan Oracle Install schema details#################################
+#specify DEPLOY_ENV_TYPE, based on the deployment platform. Allowed values vm and k8s for kubernetes
+spring_cloud_client_config_enabled: "true"
+spring_cloud_config_password: secret
+spring_cloud_config_username: admin
+spring_cloud_enabled: "true"
+spring_http_multipart_file_size_threshold: 30MB
+spring_http_multipart_max_file_size: 30MB
+spring_http_multipart_max_request_size: 30MB
+spring_servlet_multipart_file_size_threshold: 30MB
+spring_servlet_multipart_max_file_size: 30MB
+spring_servlet_multipart_max_request_size: 30MB
+#Statement date format:
+statement_date_format: "dd/MM/yyyy hh:mm a"
+statementduration_catalogue_id: f333080a-56cc-4f20-93bb-7d3da0701536
+#statement port
+static_content_dir: "/www/data"
+static_content_dir_ui: "{{ static_content_dir }}"
+sva_balances: svabalances
+sysGroupRoleChecker_topic_name: sysGroupRoleChecker
+#table daily partition date range (eg: 2019-06-01 to 2019-06-30)
+tcpProfileDetailChecker_topic_name: tcpProfileDetailChecker
+tcpThreshholdDetailChecker_topic_name: tcpThreshholdDetailChecker
+#Temp Variable for default tablespace name Ex: default_tablespacename: temp
+TEST_ISO_PORT:
+TEST_ISO_PORT1:
+TEST_ISO_PORT2:
+tomcat_version_major: 9
+tomcat_version_minor: 0
+tomcat_version_update: 91
+#topic ACL users, user name is fixed
+topic_connect_consumer_user: ConnectConsumer
+topic_connect_producer_user: ConnectProducer
+topic_consumer_user: consumer
+topic_interest_user: INTEREST_SERVICE
+topic_oldtxn_producer_user: TXNSMoneyProducer
+topic_oms_producer_user: OrderProducer
+
+topic_producer_alias: "{{ General_Alias_Name }}"
+topic_producer_encrypted_pass: "{{ General_Encrypted_password }}"
+topic_producer_keystore_kay_password: "{{ General_keystore_key_password }}"
+
+topic_producer_user: TXNProducer
+topic_sfm_pass: "{{ hostvars['DUMMY_HOST']['topic_client_password'] }}"
+topic_sfm_user: "SFMUser"
+topic_stmt_producer_user: DLY_STMT_PRODUCER
+topic_ums_producer_user: DLY_STMT_USERS_PRODUCER
+
+transferControlProfileChecker_topic_name: transferControlProfileChecker
+transferRuleChecker_topic_name: transferRuleChecker
+transfer_types_catalogue_id: ea9a5a59-bdab-44e4-ab20-9002c0a7a6dd
+# true or false needs to be given in below field
+txn_downstream_events_topic_name: DOWNSTREAM_EVENTS
+txn_topic_name: TXNS
+
+use_custom_log_location: "false"
+user_profile_dateFormat: "yyyy-MM-dd"
+wallet_minbalances: walletminbalances
+
+#Web port
+weekday: "*"
+
+bank_services_catalogue_id: 5317ad29-e767-44f7-92d0-3e81cab5c832
+IV_REP_EIG_IP: eighost
+IV_EIG_EXTERNAL_IP: eighost
+eigServerPort: 1533
+eigConnectorPort1: 1532
+eigConnectorPort2: 1528
+eigRedirectPort: 1538
+httpd_port: 8008
+bms_service_database_name: "{{ PLATFORM_NAME }}_bms"
+bms_service_db_username: "{{ PLATFORM_NAME }}_bms"
+
+local_repo_ip: "{{ hostvars[groups['repo'][0]].ansible_ssh_host }}"
+jwt_key_password: d717dd4497029c8469b84c412e9afa55
+
+IS_JACOCO_REPORT_REQUIRED: true
+
+secret_manager_enable: true
+vault_config_enabled: true
+
+vault_enabled: True
+
+valkey_enabled: VALKEYENABLED
+report_file_logo: "Mobiquity_Pay_Logo.png"
+
+postgres_exporter_port: "9187"
+k8s_ip_postgres_exporter: "svc-postgres"
+
+secret_manager_port: "58000"
+
+oracle_exporter_port: "9161"
+k8s_ip_oracle_exporter: "svc-oracle"
+oracle_exporter_port2: "9162"
+k8s_ip_oracle_exporter2: "svc-oracle2"
+pushgateway_port: "9091"
+k8s_ip_svc_pushgateway: "svc-pushgateway"
+kafka_https_enabled: "false"
+

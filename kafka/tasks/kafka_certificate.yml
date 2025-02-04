@@ -1,0 +1,66 @@
+- name: copy pem file to server 
+  copy: src=./roles/kafka/templates/kafka.pem dest={{ https_certs_path }}/kafka_{{ PLATFORM_NAME }}.pem
+  become: yes
+  delegate_to: localhost
+
+- name: "Check if pem file.stat.exists"
+  stat:
+    path: "./{{ https_certs_path }}/kafka_{{ PLATFORM_NAME }}.pem"
+  register: ssl_pem_stat
+  delegate_to: localhost
+
+- name: "Check if p12 file.stat.exists"
+  stat:
+    path: "./{{ https_certs_path }}/kafka_{{ PLATFORM_NAME }}_cert.p12"
+  register: ssl_p12_stat
+  delegate_to: localhost
+
+- name: "Creating p12 file"
+  shell: 'openssl pkcs12 -export -in ./{{ https_certs_path }}/{{ https_pem_name }} -out ./{{ https_certs_path }}/kafka_{{ PLATFORM_NAME }}_cert.p12 -passout pass:mobiquity -name "keystore"'
+  when: ( not ssl_p12_stat.stat.exists and ssl_pem_stat.stat.exists )
+  delegate_to: localhost
+
+- name: "Setting permission of p12 file"
+  file:
+    path: "./{{ https_certs_path }}/kafka_{{ PLATFORM_NAME }}_cert.p12"
+    mode: '0700'
+  when: ( not ssl_p12_stat.stat.exists )
+  delegate_to: localhost
+
+- name: "Check if jks file.stat.exists"
+  stat:
+    path: "./{{ https_certs_path }}/kafka_{{ PLATFORM_NAME }}_cert.jks"
+  register: ssl_jks_stat
+  delegate_to: localhost
+
+- name: "Creating jks file"
+  shell: 'keytool -importkeystore -srckeystore ./{{ https_certs_path }}/kafka_{{ PLATFORM_NAME }}_cert.p12 -srcstoretype PKCS12 -srcstorepass mobiquity -destkeystore ./{{ https_certs_path }}/kafka_{{ PLATFORM_NAME }}_cert.jks -deststoretype JKS -deststorepass mobiquity -noprompt'
+  when: not ssl_jks_stat.stat.exists
+  delegate_to: localhost
+
+- name: "Setting permission of jks file"
+  file:
+    path: "./{{ https_certs_path }}/kafka_{{ PLATFORM_NAME }}_cert.jks"
+    mode: '0744'
+  when: not ssl_jks_stat.stat.exists
+  delegate_to: localhost
+
+- name: "Check if jks file.stat.exists post creation"
+  stat:
+    path: "./{{ https_certs_path }}/kafka_{{ PLATFORM_NAME }}_cert.jks"
+  register: ssl_jks_stat_post
+  delegate_to: localhost
+
+- name: "Create directory if not exist"
+  file:
+    path: "{{ deployment_base_path }}/{{ application_name }}_{{ kafka_version }}/config/ssl_certs/"
+    state: directory
+    mode: '0700'    
+
+- name: "Copy jks file to server"
+  copy:
+    src: "./{{ https_certs_path }}/kafka_{{ PLATFORM_NAME }}_cert.jks"
+    dest: "{{ deployment_base_path }}/{{ application_name }}_{{ kafka_version }}/config/ssl_certs/kafka_{{ PLATFORM_NAME }}_cert.jks"
+    mode: '0700'
+  when: ssl_jks_stat_post.stat.exists
+

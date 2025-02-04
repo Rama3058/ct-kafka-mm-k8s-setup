@@ -1,0 +1,74 @@
+---
+- name: Remove bootstrap.servers  lines
+  lineinfile:
+    path: "./roles/kafka/templates/producer.properties"
+    regexp: '^bootstrap.servers='
+    state: absent
+  when: kafka_https_enabled == "true"
+  delegate_to: localhost
+
+- name: Remove line starting with security.protocol= from producer.properties
+  lineinfile:
+    path: "./roles/kafka/templates/producer.properties"
+    regexp: '^security.protocol='
+    state: absent
+  when: kafka_https_enabled == "true"
+  delegate_to: localhost
+
+- name: Add new Kafka configuration block
+  blockinfile:
+    path: "./roles/kafka/templates/producer.properties"
+    block: |
+      security.protocol=SASL_SSL
+      bootstrap.servers={{ kafka_service_ip }}:{{ kafka_port }}
+      ssl.endpoint.identification.algorithm=
+      ssl.truststore.location={{ deployment_base_path }}/{{ application_name }}_{{ kafka_version }}/config/ssl_certs/kafka_{{ PLATFORM_NAME }}_cert.jks
+      ssl.truststore.password=mobiquity
+      ssl.keystore.location={{ deployment_base_path }}/{{ application_name }}_{{ kafka_version }}/config/ssl_certs/kafka_{{ PLATFORM_NAME }}_cert.jks
+      ssl.keystore.password=mobiquity
+      ssl.key.password=mobiquity
+  delegate_to: localhost     
+  when: kafka_https_enabled == "true"
+
+- name: Configure producer.properties
+  template: src="producer.properties" dest="{{ deployment_base_path }}/{{ application_name }}_{{ kafka_version }}/config/"
+  become_user: "{{ application_user }}"
+  become: yes
+  #when: ENABLE_ACL == 'true' and kafka_mode != 'singlenode_kafka1'
+
+- name: Remove bootstrap.servers  lines
+  lineinfile:
+    path: "./roles/kafka/templates/consumer.properties"
+    regexp: '^bootstrap.servers='
+    state: absent
+  when: kafka_https_enabled == "true"
+  delegate_to: localhost
+
+- name: Remove line starting with security.protocol= from consumer.properties
+  lineinfile:
+    path: "./roles/kafka/templates/consumer.properties"
+    regexp: '^security.protocol='
+    state: absent
+  when: kafka_https_enabled == "true"
+  delegate_to: localhost
+
+- name: Add new Kafka configuration block
+  blockinfile:
+    path: "./roles/kafka/templates/consumer.properties"
+    block: |
+      security.protocol=SASL_SSL
+      bootstrap.servers={{ kafka_service_ip }}:{{ kafka_port }}
+      ssl.endpoint.identification.algorithm= 
+      ssl.truststore.location={{ deployment_base_path }}/{{ application_name }}_{{ kafka_version }}/config/ssl_certs/kafka_{{ PLATFORM_NAME }}_cert.jks
+      ssl.truststore.password=mobiquity
+      ssl.keystore.location={{ deployment_base_path }}/{{ application_name }}_{{ kafka_version }}/config/ssl_certs/kafka_{{ PLATFORM_NAME }}_cert.jks
+      ssl.keystore.password=mobiquity
+      ssl.key.password=mobiquity
+  delegate_to: localhost
+  when: kafka_https_enabled == "true"       
+
+- name: Configure consumer.properties
+  template: src="consumer.properties" dest="{{ deployment_base_path }}/{{ application_name }}_{{ kafka_version }}/config/"
+  become_user: "{{ application_user }}"
+  become: yes
+    

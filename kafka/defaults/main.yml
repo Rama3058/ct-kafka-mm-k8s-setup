@@ -1,0 +1,11 @@
+daemon_kafka_script_path: "/etc/systemd/system/kafka.service"
+daemon_zookeeper_script_path: "/etc/systemd/system/zookeeper.service"
+yum_repo_directory: /etc/yum.repos.d/
+kafka_env:
+  KAFKA_OPTS: -Djava.security.auth.login.config={{ deployment_base_path }}/{{ application_name }}_{{ kafka_version }}/config/kafka_client_jaas.conf
+shutdown_timeout_in_seconds: 30
+zookeeper_timeout_in_seconds: 60
+kafka_timeout_in_seconds: 60
+
+order_n_pay_in: onp1
+order_n_pay_out: onp2

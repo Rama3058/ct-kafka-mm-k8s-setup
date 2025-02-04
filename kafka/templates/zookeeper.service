@@ -1,0 +1,14 @@
+[Unit]
+Description=Apache Zookeeper
+After=network.target
+
+[Service]
+Type=simple
+User={{ application_user }}
+WorkingDirectory={{ deployment_base_path }}/{{ application_name }}_{{ kafka_version }}
+Environment="KAFKA_OPTS=-Djava.security.auth.login.config=/home/mobiquity///kafka_2.13-3.0.0/config/zookeeper_jaas.conf"
+ExecStart={{ deployment_base_path }}/{{ application_name }}_{{ kafka_version }}/bin/zookeeper-server-start.sh {{ deployment_base_path }}/{{ application_name }}_{{ kafka_version }}/config/zookeeper.properties
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

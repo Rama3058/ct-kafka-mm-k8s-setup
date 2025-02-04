@@ -1,0 +1,6 @@
+---
+#allow_duplicates: yes
+#force_handlers: true
+dependencies:
+        #  - { role: oracle-java-jce, become: yes}
+        #- { role: rsyslogclientconfig, become: yes, when: rsyslog_required == 'true'}

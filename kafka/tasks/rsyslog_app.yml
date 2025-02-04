@@ -1,0 +1,132 @@
+---
+- name: "Running rsyslog remote config for controller logs"
+  include_role:
+    name: rsyslogremoteconfig
+    apply:
+      delegate_to: "{{ RsyslogIP }}"
+  register: current_dir
+  when: rsyslog_required == 'true'
+  vars:
+    application_name: "controller"
+    tag_name: "kafkacontroller"
+    ansible_ssh_user: "{{ hostvars[groups['rsyslogremoteserver'][0]].ansible_ssh_user }}"
+    component_name: "kafka"
+
+- name: "running rsyslog component config for controller logs"
+  include_role: name=rsyslogcomponentconfig
+  when: rsyslog_required == 'true'
+  vars:
+    mobiquity_new_log_path: "{{ deployment_base_path }}/{{ application_name }}_{{ kafka_version }}/logs"
+    application_role_name: "controller"
+    tag_name: "kafkacontroller"
+    component_name: "kafka"
+
+- name: "Running rsyslog remote config for kafka-authorizer logs"
+  include_role:
+    name: rsyslogremoteconfig
+    apply:
+      delegate_to: "{{ RsyslogIP }}"
+  register: current_dir
+  when: rsyslog_required == 'true'
+  vars:
+    application_name: "kafka-authorizer"
+    tag_name: "kafka-authorizer"
+    ansible_ssh_user: "{{ hostvars[groups['rsyslogremoteserver'][0]].ansible_ssh_user }}"
+    component_name: "kafka"
+
+- name: "running rsyslog component config for kafka-authorizer logs"
+  include_role: name=rsyslogcomponentconfig
+  when: rsyslog_required == 'true'
+  vars:
+    mobiquity_new_log_path: "{{ deployment_base_path }}/{{ application_name }}_{{ kafka_version }}/logs"
+    application_role_name: "kafka-authorizer"
+    tag_name: "kafka-authorizer"
+    component_name: "kafka"
+
+- name: "Running rsyslog remote config for kafka-request logs"
+  include_role:
+    name: rsyslogremoteconfig
+    apply:
+      delegate_to: "{{ RsyslogIP }}"
+  register: current_dir
+  when: rsyslog_required == 'true'
+  vars:
+    application_name: "kafka-request"
+    tag_name: "kafka-request"
+    ansible_ssh_user: "{{ hostvars[groups['rsyslogremoteserver'][0]].ansible_ssh_user }}"
+    component_name: "kafka"
+
+- name: "running rsyslog component config for kafka-request logs"
+  include_role: name=rsyslogcomponentconfig
+  when: rsyslog_required == 'true'
+  vars:
+    mobiquity_new_log_path: "{{ deployment_base_path }}/{{ application_name }}_{{ kafka_version }}/logs"
+    application_role_name: "kafka-request"
+    tag_name: "kafka-request"
+    component_name: "kafka"
+
+- name: "Running rsyslog remote config for server logs"
+  include_role:
+    name: rsyslogremoteconfig
+    apply:
+      delegate_to: "{{ RsyslogIP }}"
+  register: current_dir
+  when: rsyslog_required == 'true'
+  vars:
+    application_name: "server"
+    tag_name: "kafkaserver"
+    ansible_ssh_user: "{{ hostvars[groups['rsyslogremoteserver'][0]].ansible_ssh_user }}"
+    component_name: "kafka"
+
+- name: "running rsyslog component config for server logs"
+  include_role: name=rsyslogcomponentconfig
+  when: rsyslog_required == 'true'
+  vars:
+    mobiquity_new_log_path: "{{ deployment_base_path }}/{{ application_name }}_{{ kafka_version }}/logs"
+    application_role_name: "server"
+    tag_name: "kafkaserver"
+    component_name: "kafka"
+
+- name: "Running rsyslog remote config for state-change logs"
+  include_role:
+    name: rsyslogremoteconfig
+    apply:
+      delegate_to: "{{ RsyslogIP }}"
+  register: current_dir
+  when: rsyslog_required == 'true'
+  vars:
+    application_name: "state-change"
+    tag_name: "kafkastate-change"
+    ansible_ssh_user: "{{ hostvars[groups['rsyslogremoteserver'][0]].ansible_ssh_user }}"
+    component_name: "kafka"
+
+- name: "running rsyslog component config for state-change logs"
+  include_role: name=rsyslogcomponentconfig
+  when: rsyslog_required == 'true'
+  vars:
+    mobiquity_new_log_path: "{{ deployment_base_path }}/{{ application_name }}_{{ kafka_version }}/logs"
+    application_role_name: "state-change"
+    tag_name: "kafkastate-change"
+    component_name: "kafka"
+
+- name: "Running rsyslog remote config for log-cleaner logs"
+  include_role:
+    name: rsyslogremoteconfig
+    apply:
+      delegate_to: "{{ RsyslogIP }}"
+  register: current_dir
+  when: rsyslog_required == 'true'
+  vars:
+    application_name: "log-cleaner"
+    tag_name: "kafkalog-cleaner"
+    ansible_ssh_user: "{{ hostvars[groups['rsyslogremoteserver'][0]].ansible_ssh_user }}"
+    component_name: "kafka"
+
+- name: "running rsyslog component config for log-cleaner.log logs"
+  include_role: name=rsyslogcomponentconfig
+  when: rsyslog_required == 'true'
+  vars:
+    mobiquity_new_log_path: "{{ deployment_base_path }}/{{ application_name }}_{{ kafka_version }}/logs"
+    application_role_name: "log-cleaner"
+    tag_name: "kafkalog-cleaner"
+    component_name: "kafka"

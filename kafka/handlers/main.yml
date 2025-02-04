@@ -1,0 +1,367 @@
+---
+- name: yum-clean-all
+  command: yum clean all
+  args:
+    warn: no
+
+- name: restart zookeeper service
+  service: name=zookeeper.service state=restarted
+  become: yes
+
+- name: wait for zookeeper
+  wait_for: port="{{ zookeeper_port | int }}" timeout={{zookeeper_timeout_in_seconds}}
+  register: command_result
+  ignore_errors: True
+
+- name: restart kafka service
+  service: name=kafka.service state=restarted
+  become: yes
+
+- name: wait for kafka
+  wait_for: port="{{ kafka_port | int }}" timeout={{kafka_timeout_in_seconds}}
+  register: command_result
+  ignore_errors: True
+
+- name: create txn topic
+  shell: "sh {{ deployment_base_path }}/{{ application_name }}_{{ kafka_version }}/bin/kafka-topics.sh --create --bootstrap-server {{ broker_servers }} --partitions {{ no_txns_partitions }} --replication-factor {{ replication_factor }} --topic {{ txn_topic_name }} --command-config {{ deployment_base_path }}/{{ application_name }}_{{ kafka_version }}/config/consumer.properties --config segment.bytes={{ TOPIC_SEGMENT_BYTES }} --config segment.ms={{ TOPIC_SEGMENT_MS }}"
+  environment: "{{ kafka_env }}"
+  become_user: "{{ application_user }}"
+  register: command_result
+  ignore_errors: yes
+  become: yes
+
+- name: create notification topic
+  shell: "sh {{ deployment_base_path }}/{{ application_name }}_{{ kafka_version }}/bin/kafka-topics.sh --create --bootstrap-server {{ broker_servers }} --partitions {{ no_notif_partitions }} --replication-factor {{ replication_factor }} --topic NOTIFICATION --command-config {{ deployment_base_path }}/{{ application_name }}_{{ kafka_version }}/config/consumer.properties"
+  environment: "{{ kafka_env }}"
+  become_user: "{{ application_user }}"
+  register: command_result
+  ignore_errors: yes
+  become: yes
+
+- name: create daily stmt users topic
+  shell: "sh {{ deployment_base_path }}/{{ application_name }}_{{ kafka_version }}/bin/kafka-topics.sh --create --bootstrap-server {{ broker_servers }} --partitions {{ no_notif_partitions }} --replication-factor {{ replication_factor }} --topic {{ daily_statement_users_topic_name }} --command-config {{ deployment_base_path }}/{{ application_name }}_{{ kafka_version }}/config/consumer.properties"
+  environment: "{{ kafka_env }}"
+  become_user: "{{ application_user }}"
+  register: command_result
+  ignore_errors: yes
+  become: yes
+
+- name: create daily stmt topic
+  shell: "sh {{ deployment_base_path }}/{{ application_name }}_{{ kafka_version }}/bin/kafka-topics.sh --create --bootstrap-server {{ broker_servers }} --partitions {{ no_notif_partitions }} --replication-factor {{ replication_factor }} --topic {{ daily_statement_topic_name }} --command-config {{ deployment_base_path }}/{{ application_name }}_{{ kafka_version }}/config/consumer.properties"
+  environment: "{{ kafka_env }}"
+  become_user: "{{ application_user }}"
+  register: command_result
+  ignore_errors: yes
+  become: yes
+
+- name: create downstreamevents topic
+  shell: "sh {{ deployment_base_path }}/{{ application_name }}_{{ kafka_version }}/bin/kafka-topics.sh --create --bootstrap-server {{ broker_servers }} --partitions {{ no_txns_downstream_events_partitions }} --replication-factor {{ replication_factor }} --topic {{ txn_downstream_events_topic_name }} --command-config {{ deployment_base_path }}/{{ application_name }}_{{ kafka_version }}/config/consumer.properties"
+  environment: "{{ kafka_env }}"
+  become_user: "{{ application_user }}"
+  register: command_result
+  ignore_errors: yes
+  become: yes
+
+- name: create notificationfcmpush topic
+  shell: "sh {{ deployment_base_path }}/{{ application_name }}_{{ kafka_version }}/bin/kafka-topics.sh --create --bootstrap-server {{ broker_servers }} --partitions {{ no_txns_downstream_events_partitions }} --replication-factor {{ replication_factor }} --topic notificationfcmpush --command-config {{ deployment_base_path }}/{{ application_name }}_{{ kafka_version }}/config/consumer.properties"
+  environment: "{{ kafka_env }}"
+  become_user: "{{ application_user }}"
+  register: command_result
+  ignore_errors: yes
+  become: yes
+
+- name: create notificationpost topic
+  shell: "sh {{ deployment_base_path }}/{{ application_name }}_{{ kafka_version }}/bin/kafka-topics.sh --create --bootstrap-server {{ broker_servers }} --partitions {{ no_txns_downstream_events_partitions }} --replication-factor {{ replication_factor }} --topic notificationpost --command-config {{ deployment_base_path }}/{{ application_name }}_{{ kafka_version }}/config/consumer.properties"
+  environment: "{{ kafka_env }}"
+  become_user: "{{ application_user }}"
+  register: command_result
+  ignore_errors: yes
+  become: yes
+
+- name: create notificationsms topic
+  shell: "sh {{ deployment_base_path }}/{{ application_name }}_{{ kafka_version }}/bin/kafka-topics.sh --create --bootstrap-server {{ broker_servers }} --partitions {{ no_txns_downstream_events_partitions }} --replication-factor {{ replication_factor }} --topic notificationsms --command-config {{ deployment_base_path }}/{{ application_name }}_{{ kafka_version }}/config/consumer.properties"
+  environment: "{{ kafka_env }}"
+  become_user: "{{ application_user }}"
+  register: command_result
+  ignore_errors: yes
+  become: yes
+
+- name: create notificationurl topic
+  shell: "sh {{ deployment_base_path }}/{{ application_name }}_{{ kafka_version }}/bin/kafka-topics.sh --create --bootstrap-server {{ broker_servers }} --partitions {{ no_txns_downstream_events_partitions }} --replication-factor {{ replication_factor }} --topic notificationurl --command-config {{ deployment_base_path }}/{{ application_name }}_{{ kafka_version }}/config/consumer.properties"
+  environment: "{{ kafka_env }}"
+  become_user: "{{ application_user }}"
+  register: command_result
+  ignore_errors: yes
+  become: yes
+
+- name: create eventsinktracker topic
+  shell: "sh {{ deployment_base_path }}/{{ application_name }}_{{ kafka_version }}/bin/kafka-topics.sh --create --bootstrap-server {{ broker_servers }} --partitions {{ no_notif_partitions }} --replication-factor {{ replication_factor }} --topic S_EVENT_SINK_TRACKER --command-config {{ deployment_base_path }}/{{ application_name }}_{{ kafka_version }}/config/consumer.properties"
+  environment: "{{ kafka_env }}"
+  become_user: "{{ application_user }}"
+  register: command_result
+  ignore_errors: yes
+  become: yes
+
+- name: create events topic
+  shell: "sh {{ deployment_base_path }}/{{ application_name }}_{{ kafka_version }}/bin/kafka-topics.sh --create --bootstrap-server {{ broker_servers }} --partitions {{ no_txns_partitions }} --replication-factor {{ replication_factor }} --topic EVENTS --command-config {{ deployment_base_path }}/{{ application_name }}_{{ kafka_version }}/config/consumer.properties"
+  environment: "{{ kafka_env }}"
+  become_user: "{{ application_user }}"
+  register: command_result
+  ignore_errors: yes
+  become: yes
+
+- name: create ordernpayin topic
+  shell: "sh {{ deployment_base_path }}/{{ application_name }}_{{ kafka_version }}/bin/kafka-topics.sh --create --bootstrap-server {{ broker_servers }} --partitions {{ no_txns_partitions }} --replication-factor {{ replication_factor }} --topic {{ order_n_pay_in }} --command-config {{ deployment_base_path }}/{{ application_name }}_{{ kafka_version }}/config/consumer.properties"
+  environment: "{{ kafka_env }}"
+  become_user: "{{ application_user }}"
+  register: command_result
+  ignore_errors: yes
+  become: yes
+
+- name: create ordernpayout topic
+  shell: "sh {{ deployment_base_path }}/{{ application_name }}_{{ kafka_version }}/bin/kafka-topics.sh --create --bootstrap-server {{ broker_servers }} --partitions {{ no_txns_partitions }} --replication-factor {{ replication_factor }} --topic {{ order_n_pay_out }} --command-config {{ deployment_base_path }}/{{ application_name }}_{{ kafka_version }}/config/consumer.properties"
+  environment: "{{ kafka_env }}"
+  become_user: "{{ application_user }}"
+  register: command_result
+  ignore_errors: yes
+  become: yes
+
+- name: create svabalances topic
+  shell: "sh {{ deployment_base_path }}/{{ application_name }}_{{ kafka_version }}/bin/kafka-topics.sh --create --bootstrap-server {{ broker_servers }} --partitions {{ no_txns_partitions }} --replication-factor {{ replication_factor }} --topic {{ sva_balances }} --command-config {{ deployment_base_path }}/{{ application_name }}_{{ kafka_version }}/config/consumer.properties"
+  environment: "{{ kafka_env }}"
+  become_user: "{{ application_user }}"
+  register: command_result
+  ignore_errors: yes
+  become: yes
+
+- name: create walletminbalances topic
+  shell: "sh {{ deployment_base_path }}/{{ application_name }}_{{ kafka_version }}/bin/kafka-topics.sh --create --bootstrap-server {{ broker_servers }} --partitions {{ no_txns_partitions }} --replication-factor {{ replication_factor }} --topic {{ wallet_minbalances }} --command-config {{ deployment_base_path }}/{{ application_name }}_{{ kafka_version }}/config/consumer.properties"
+  environment: "{{ kafka_env }}"
+  become_user: "{{ application_user }}"
+  register: command_result
+  ignore_errors: yes
+  become: yes
+
+- name: create sfm.transaction topic
+  shell: "sh {{ deployment_base_path }}/{{ application_name }}_{{ kafka_version }}/bin/kafka-topics.sh --create --bootstrap-server {{ broker_servers }} --partitions {{ no_sfm_partitions }} --replication-factor {{ replication_factor }} --topic sfm.transaction --command-config {{ deployment_base_path }}/{{ application_name }}_{{ kafka_version }}/config/consumer.properties"
+  environment: "{{ kafka_env }}"
+  become_user: "{{ application_user }}"
+  register: command_result
+  ignore_errors: yes
+  become: yes
+
+- name: create sfm.orderandpay topic
+  shell: "sh {{ deployment_base_path }}/{{ application_name }}_{{ kafka_version }}/bin/kafka-topics.sh --create --bootstrap-server {{ broker_servers }} --partitions {{ no_sfm_partitions }} --replication-factor {{ replication_factor }} --topic sfm.orderandpay --command-config {{ deployment_base_path }}/{{ application_name }}_{{ kafka_version }}/config/consumer.properties"
+  environment: "{{ kafka_env }}"
+  become_user: "{{ application_user }}"
+  register: command_result
+  ignore_errors: yes
+  become: yes
+
+- name: create sfm.registration topic
+  shell: "sh {{ deployment_base_path }}/{{ application_name }}_{{ kafka_version }}/bin/kafka-topics.sh --create --bootstrap-server {{ broker_servers }} --partitions {{ no_sfm_partitions }} --replication-factor {{ replication_factor }} --topic sfm.registration --command-config {{ deployment_base_path }}/{{ application_name }}_{{ kafka_version }}/config/consumer.properties"
+  environment: "{{ kafka_env }}"
+  become_user: "{{ application_user }}"
+  register: command_result
+  ignore_errors: yes
+  become: yes
+
+- name: create sfm.deregistration topic
+  shell: "sh {{ deployment_base_path }}/{{ application_name }}_{{ kafka_version }}/bin/kafka-topics.sh --create --bootstrap-server {{ broker_servers }} --partitions {{ no_sfm_partitions }} --replication-factor {{ replication_factor }} --topic sfm.deregistration --command-config {{ deployment_base_path }}/{{ application_name }}_{{ kafka_version }}/config/consumer.properties"
+  environment: "{{ kafka_env }}"
+  become_user: "{{ application_user }}"
+  register: command_result
+  ignore_errors: yes
+  become: yes
+
+- name: create sfm.UPGRADEKYC topic
+  shell: "sh {{ deployment_base_path }}/{{ application_name }}_{{ kafka_version }}/bin/kafka-topics.sh --create --bootstrap-server {{ broker_servers }} --partitions {{ no_sfm_partitions }} --replication-factor {{ replication_factor }} --topic sfm.UPGRADEKYC --command-config {{ deployment_base_path }}/{{ application_name }}_{{ kafka_version }}/config/consumer.properties"
+  environment: "{{ kafka_env }}"
+  become_user: "{{ application_user }}"
+  register: command_result
+  ignore_errors: yes
+  become: yes
+
+- name: create sfm.BANKLINKING topic
+  shell: "sh {{ deployment_base_path }}/{{ application_name }}_{{ kafka_version }}/bin/kafka-topics.sh --create --bootstrap-server {{ broker_servers }} --partitions {{ no_sfm_partitions }} --replication-factor {{ replication_factor }} --topic sfm.BANKLINKING --command-config {{ deployment_base_path }}/{{ application_name }}_{{ kafka_version }}/config/consumer.properties"
+  environment: "{{ kafka_env }}"
+  become_user: "{{ application_user }}"
+  register: command_result
+  ignore_errors: yes
+  become: yes
+
+- name: create sfm.BANKDELINKING topic
+  shell: "sh {{ deployment_base_path }}/{{ application_name }}_{{ kafka_version }}/bin/kafka-topics.sh --create --bootstrap-server {{ broker_servers }} --partitions {{ no_sfm_partitions }} --replication-factor {{ replication_factor }} --topic sfm.BANKDELINKING --command-config {{ deployment_base_path }}/{{ application_name }}_{{ kafka_version }}/config/consumer.properties"
+  environment: "{{ kafka_env }}"
+  become_user: "{{ application_user }}"
+  register: command_result
+  ignore_errors: yes
+  become: yes
+
+- name: create notificationposttop topic
+  shell: "sh {{ deployment_base_path }}/{{ application_name }}_{{ kafka_version }}/bin/kafka-topics.sh --create --bootstrap-server {{ broker_servers }} --partitions {{ no_notif_partitions }} --replication-factor {{ replication_factor }} --topic notificationposttop --command-config {{ deployment_base_path }}/{{ application_name }}_{{ kafka_version }}/config/consumer.properties"
+  environment: "{{ kafka_env }}"
+  become_user: "{{ application_user }}"
+  register: command_result
+  ignore_errors: yes
+  become: yes
+
+- name: create notificationpostlow topic
+  shell: "sh {{ deployment_base_path }}/{{ application_name }}_{{ kafka_version }}/bin/kafka-topics.sh --create --bootstrap-server {{ broker_servers }} --partitions {{ no_notif_partitions }} --replication-factor {{ replication_factor }} --topic notificationpostlow --command-config {{ deployment_base_path }}/{{ application_name }}_{{ kafka_version }}/config/consumer.properties"
+  environment: "{{ kafka_env }}"
+  become_user: "{{ application_user }}"
+  register: command_result
+  ignore_errors: yes
+  become: yes
+
+- name: create notificationsmslow topic
+  shell: "sh {{ deployment_base_path }}/{{ application_name }}_{{ kafka_version }}/bin/kafka-topics.sh --create --bootstrap-server {{ broker_servers }} --partitions {{ no_notif_partitions }} --replication-factor {{ replication_factor }} --topic notificationsmslow --command-config {{ deployment_base_path }}/{{ application_name }}_{{ kafka_version }}/config/consumer.properties"
+  environment: "{{ kafka_env }}"
+  become_user: "{{ application_user }}"
+  register: command_result
+  ignore_errors: yes
+  become: yes
+
+- name: create notificationsmstop topic
+  shell: "sh {{ deployment_base_path }}/{{ application_name }}_{{ kafka_version }}/bin/kafka-topics.sh --create --bootstrap-server {{ broker_servers }} --partitions {{ no_notif_partitions }} --replication-factor {{ replication_factor }} --topic notificationsmstop --command-config {{ deployment_base_path }}/{{ application_name }}_{{ kafka_version }}/config/consumer.properties"
+  environment: "{{ kafka_env }}"
+  become_user: "{{ application_user }}"
+  register: command_result
+  ignore_errors: yes
+  become: yes
+
+- name: create notificationurllow topic
+  shell: "sh {{ deployment_base_path }}/{{ application_name }}_{{ kafka_version }}/bin/kafka-topics.sh --create --bootstrap-server {{ broker_servers }} --partitions {{ no_notif_partitions }} --replication-factor {{ replication_factor }} --topic notificationurllow --command-config {{ deployment_base_path }}/{{ application_name }}_{{ kafka_version }}/config/consumer.properties"
+  environment: "{{ kafka_env }}"
+  become_user: "{{ application_user }}"
+  register: command_result
+  ignore_errors: yes
+  become: yes
+
+- name: create notificationurltop topic
+  shell: "sh {{ deployment_base_path }}/{{ application_name }}_{{ kafka_version }}/bin/kafka-topics.sh --create --bootstrap-server {{ broker_servers }} --partitions {{ no_notif_partitions }} --replication-factor {{ replication_factor }} --topic notificationurltop --command-config {{ deployment_base_path }}/{{ application_name }}_{{ kafka_version }}/config/consumer.properties"
+  environment: "{{ kafka_env }}"
+  become_user: "{{ application_user }}"
+  register: command_result
+  ignore_errors: yes
+  become: yes
+
+- name: create notificationfcmpushtop topic
+  shell: "sh {{ deployment_base_path }}/{{ application_name }}_{{ kafka_version }}/bin/kafka-topics.sh --create --bootstrap-server {{ broker_servers }} --partitions {{ no_notif_partitions }} --replication-factor {{ replication_factor }} --topic notificationfcmpushtop --command-config {{ deployment_base_path }}/{{ application_name }}_{{ kafka_version }}/config/consumer.properties"
+  environment: "{{ kafka_env }}"
+  become_user: "{{ application_user }}"
+  register: command_result
+  ignore_errors: yes
+  become: yes
+
+- name: create notificationfcmpushlow topic
+  shell: "sh {{ deployment_base_path }}/{{ application_name }}_{{ kafka_version }}/bin/kafka-topics.sh --create --bootstrap-server {{ broker_servers }} --partitions {{ no_notif_partitions }} --replication-factor {{ replication_factor }} --topic notificationfcmpushlow --command-config {{ deployment_base_path }}/{{ application_name }}_{{ kafka_version }}/config/consumer.properties"
+  environment: "{{ kafka_env }}"
+  become_user: "{{ application_user }}"
+  register: command_result
+  ignore_errors: yes
+  become: yes
+
+- name: create budsusagedata topic
+  shell: "sh {{ deployment_base_path }}/{{ application_name }}_{{ kafka_version }}/bin/kafka-topics.sh --create --bootstrap-server {{ broker_servers }} --partitions {{ no_sfm_partitions }} --replication-factor {{ replication_factor }} --topic budsusagedata --command-config {{ deployment_base_path }}/{{ application_name }}_{{ kafka_version }}/config/consumer.properties"
+  environment: "{{ kafka_env }}"
+  become_user: "{{ application_user }}"
+  register: command_result
+  ignore_errors: yes
+  become: yes
+
+- name: create sendnotificationtop topic
+  shell: "sh {{ deployment_base_path }}/{{ application_name }}_{{ kafka_version }}/bin/kafka-topics.sh --create --bootstrap-server {{ broker_servers }} --partitions {{ no_txns_downstream_events_partitions }} --replication-factor {{ replication_factor }} --topic {{ notification_sendtop }} --command-config {{ deployment_base_path }}/{{ application_name }}_{{ kafka_version }}/config/consumer.properties"
+  environment: "{{ kafka_env }}"
+  become_user: "{{ application_user }}"
+  register: command_result
+  ignore_errors: yes
+  become: yes
+
+- name: create sendnotification topic
+  shell: "sh {{ deployment_base_path }}/{{ application_name }}_{{ kafka_version }}/bin/kafka-topics.sh --create --bootstrap-server {{ broker_servers }} --partitions {{ no_txns_downstream_events_partitions }} --replication-factor {{ replication_factor }} --topic {{ notification_send }} --command-config {{ deployment_base_path }}/{{ application_name }}_{{ kafka_version }}/config/consumer.properties"
+  environment: "{{ kafka_env }}"
+  become_user: "{{ application_user }}"
+  register: command_result
+  ignore_errors: yes
+  become: yes
+
+- name: create sendnotificationlow topic
+  shell: "sh {{ deployment_base_path }}/{{ application_name }}_{{ kafka_version }}/bin/kafka-topics.sh --create --bootstrap-server {{ broker_servers }} --partitions {{ no_txns_downstream_events_partitions }} --replication-factor {{ replication_factor }} --topic {{ notification_sendlow }} --command-config {{ deployment_base_path }}/{{ application_name }}_{{ kafka_version }}/config/consumer.properties"
+  environment: "{{ kafka_env }}"
+  become_user: "{{ application_user }}"
+  register: command_result
+  ignore_errors: yes
+  become: yes
+
+- name: create newevents topic
+  shell: "sh {{ deployment_base_path }}/{{ application_name }}_{{ kafka_version }}/bin/kafka-topics.sh --create --bootstrap-server {{ broker_servers }} --partitions {{ no_txns_partitions }} --replication-factor {{ replication_factor }} --topic events --command-config {{ deployment_base_path }}/{{ application_name }}_{{ kafka_version }}/config/consumer.properties"
+  environment: "{{ kafka_env }}"
+  become_user: "{{ application_user }}"
+  register: command_result
+  ignore_errors: yes
+  become: yes
+
+- name: create usermangementevents topic
+  shell: "sh {{ deployment_base_path }}/{{ application_name }}_{{ kafka_version }}/bin/kafka-topics.sh --create --bootstrap-server {{ broker_servers }} --partitions {{ no_txns_partitions }} --replication-factor {{ replication_factor }} --topic USER_MANGEMENT_EVENTS --command-config {{ deployment_base_path }}/{{ application_name }}_{{ kafka_version }}/config/consumer.properties"
+  environment: "{{ kafka_env }}"
+  become_user: "{{ application_user }}"
+  register: command_result
+  ignore_errors: yes
+  become: yes
+
+- name: create financialtransactionevents topic
+  shell: "sh {{ deployment_base_path }}/{{ application_name }}_{{ kafka_version }}/bin/kafka-topics.sh --create --bootstrap-server {{ broker_servers }} --partitions {{ no_txns_partitions }} --replication-factor {{ replication_factor }} --topic FINANCIAL_TRANSACTION_EVENTS --command-config {{ deployment_base_path }}/{{ application_name }}_{{ kafka_version }}/config/consumer.properties"
+  environment: "{{ kafka_env }}"
+  become_user: "{{ application_user }}"
+  register: command_result
+  ignore_errors: yes
+  become: yes
+
+- name: create audittraildump topic
+  shell: "sh {{ deployment_base_path }}/{{ application_name }}_{{ kafka_version }}/bin/kafka-topics.sh --create --bootstrap-server {{ broker_servers }} --partitions {{ no_txns_partitions }} --replication-factor {{ replication_factor }} --topic audittraildump --command-config {{ deployment_base_path }}/{{ application_name }}_{{ kafka_version }}/config/consumer.properties"
+  environment: "{{ kafka_env }}"
+  become_user: "{{ application_user }}"
+  register: command_result
+  ignore_errors: yes
+  become: yes
+
+- name: create audittrailevents topic
+  shell: "sh {{ deployment_base_path }}/{{ application_name }}_{{ kafka_version }}/bin/kafka-topics.sh --create --bootstrap-server {{ broker_servers }} --partitions 3 --replication-factor {{ replication_factor }}  --topic audittrailevents --command-config {{ deployment_base_path }}/{{ application_name }}_{{ kafka_version }}/config/consumer.properties"
+  environment: "{{ kafka_env }}"
+  become_user: "{{ application_user }}"
+  register: command_result
+  ignore_errors: yes
+  become: yes
+
+- name: create kafkaheartbeat topic
+  shell: "sh {{ deployment_base_path }}/{{ application_name }}_{{ kafka_version }}/bin/kafka-topics.sh --create --bootstrap-server {{ broker_servers }} --partitions {{ no_txns_partitions }} --replication-factor {{ replication_factor }} --topic kafka-heart-beat --command-config {{ deployment_base_path }}/{{ application_name }}_{{ kafka_version }}/config/consumer.properties"
+  environment: "{{ kafka_env }}"
+  become_user: "{{ application_user }}"
+  register: command_result
+  ignore_errors: yes
+  become: yes
+
+- name: create txns_retry topic
+  shell: "sh {{ deployment_base_path }}/{{ application_name }}_{{ kafka_version }}/bin/kafka-topics.sh --create --bootstrap-server {{ broker_servers }} --partitions {{ no_txns_partitions }} --replication-factor {{ replication_factor }} --topic TXNS_RETRY --command-config {{ deployment_base_path }}/{{ application_name }}_{{ kafka_version }}/config/consumer.properties"
+  environment: "{{ kafka_env }}"
+  become_user: "{{ application_user }}"
+  register: command_result
+  ignore_errors: yes
+  become: yes
+
+- name: create txns_dlt topic
+  shell: "sh {{ deployment_base_path }}/{{ application_name }}_{{ kafka_version }}/bin/kafka-topics.sh --create --bootstrap-server {{ broker_servers }} --partitions {{ no_txns_partitions }} --replication-factor {{ replication_factor }} --topic TXNS_DLT --command-config {{ deployment_base_path }}/{{ application_name }}_{{ kafka_version }}/config/consumer.properties"
+  environment: "{{ kafka_env }}"
+  become_user: "{{ application_user }}"
+  register: command_result
+  ignore_errors: yes
+  become: yes
+
+- name: executing ACL_rules script
+  shell: bash -lc "sh {{ deployment_base_path }}/{{ application_name }}_{{ kafka_version }}/config/ACL_rules.sh"
+  environment: "{{ kafka_env }}"
+  become_user: "{{ application_user }}"
+  register: command_result
+  ignore_errors: yes
+  become: yes

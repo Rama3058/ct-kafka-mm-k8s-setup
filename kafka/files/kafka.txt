@@ -1,0 +1,1 @@
+copy CoreWeb.war file here before executing this role

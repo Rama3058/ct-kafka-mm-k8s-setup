@@ -1,0 +1,542 @@
+---
+- name: Include task for restart
+  include_tasks: kafka_certificate.yml
+  when: kafka_https_enabled == "true"
+
+- name: Copy localrepo repository details
+  template: src=localrepo.repo dest={{ yum_repo_directory }}
+  become: yes
+
+- name: "Check application user exists"
+  user: name={{ application_user }} state=present
+  become: yes
+
+    #- name: "Ensure Kafka_OPTS is set in zookeeper.service when kafka_https_enabled is enabled"
+    #lineinfile:
+    #path: "./roles/kafka/templates/zookeeper.service"
+    #line: 'Environment="KAFKA_OPTS=-Djava.security.auth.login.config={{ deployment_base_path }}/{{ application_name }}_{{ kafka_version }/config/zookeeper_jaas.conf"'
+    #insertafter: '^WorkingDirectory='
+    #state: present
+    #create: yes
+    # when: kafka_https_enabled == "true"
+
+- name: "Ensure Kafka_OPTS is set in zookeeper.service when kafka_https_enabled is enabled"
+  lineinfile:
+    path: "./roles/kafka/templates/zookeeper.service"
+    line: 'Environment="KAFKA_OPTS=-Djava.security.auth.login.config={{ deployment_base_path }}/{{ application_name }}_{{ kafka_version }}/config/zookeeper_jaas.conf"'
+    insertafter: '^WorkingDirectory='
+    state: present
+    create: yes
+  delegate_to: localhost
+  when: kafka_https_enabled == "true"
+
+- name: "Create a zookeeper systemd script to run application as daemon"
+  template: dest={{ daemon_zookeeper_script_path }} src="zookeeper.service" owner={{ application_user }}
+  become: yes
+  register: is_script_changed
+
+    #- name: "Ensure Kafka_OPTS is set in kafka.service when kafka_https_enabled is enabled"
+    #lineinfile:
+    #path: "./roles/kafka/templates/kafka.service"
+    #line: 'Environment="KAFKA_OPTS=-Djava.security.auth.login.config={{ deployment_base_path }}/{{ application_name }}_{{ kafka_version }/config/zookeeper_jaas.conf"'
+    #insertafter: '^WorkingDirectory='
+    # state: present
+    # create: yes
+    # when: kafka_https_enabled == "true"
+
+- name: "Ensure Kafka_OPTS is set in kafka.service when kafka_https_enabled is enabled"
+  lineinfile:
+    path: "./roles/kafka/templates/kafka.service"
+    line: 'Environment="KAFKA_OPTS=-Djava.security.auth.login.config={{ deployment_base_path }}/{{ application_name }}_{{ kafka_version }}/config/kafka_server_jaas.conf"'
+    insertafter: '^WorkingDirectory='
+    state: present
+    create: yes
+  delegate_to: localhost
+  when: kafka_https_enabled == "true"
+
+- name: "Create a kafka systemd script to run application as daemon"
+  template: dest={{ daemon_kafka_script_path }} src="kafka.service" owner={{ application_user }}
+  become: yes
+  register: is_script_changed
+
+- name: "Reload the daemon"
+  command: systemctl daemon-reload
+  become: yes
+  when: is_script_changed is changed
+
+- name: "Register zookeeper  as service"
+  service: name=zookeeper enabled=yes state=stopped
+  become: yes
+
+- name: "Register kafka as service"
+  service: name={{ application_name }} enabled=yes state=stopped
+  become: yes
+
+- name: "Reload the daemon"
+  command: systemctl daemon-reload
+  become: yes
+  when: is_script_changed is changed
+
+- name: Remove old files of kafka
+  file: path={{ deployment_base_path }}/{{ application_name }}_{{ kafka_version }}.tgz state=absent
+  become: yes
+
+- name: Copy Kafka to Deploymemt Server
+  copy: src=files/{{ application_name }}_{{ kafka_version }}.tgz dest={{ deployment_base_path }}
+  #become_user: "{{ application_user }}"
+  become: yes
+
+- name: Change owner to application user
+  command: chown -R {{ application_user }}:{{ application_user }} {{ deployment_base_path }}/{{ application_name }}_{{ kafka_version }}.tgz
+  become: yes
+
+- name: Extract archive
+  command: tar -xvf {{ deployment_base_path }}/{{ application_name }}_{{ kafka_version }}.tgz -C {{ deployment_base_path }}
+  #become_user: "{{ application_user }}"
+  become: yes
+
+- name: Change owner to application user
+  command: chown -R {{ application_user }}:{{ application_user }} {{ deployment_base_path }}/{{ application_name }}_{{ kafka_version }}
+  become: yes
+
+- name: Configure server.properties for ssl enabled
+  template: src="server_ssl.properties" dest="{{ deployment_base_path }}/{{ application_name }}_{{ kafka_version }}/config/server.properties"
+  become_user: "{{ application_user }}"
+  become: yes
+  when: kafka_https_enabled == "true"
+
+- name: Configure server_acl.properties
+  template: src="server_acl.properties" dest="{{ deployment_base_path }}/{{ application_name }}_{{ kafka_version }}/config/server.properties"
+  become_user: "{{ application_user }}"
+  become: yes
+  when: kafka_https_enabled == "false"
+
+- name: adding broker rebalance configuration
+  lineinfile:
+    path: "{{ deployment_base_path }}/{{ application_name }}_{{ kafka_version }}/config/server.properties"
+    line: "auto.leader.rebalance.enable=true"
+    insertafter: EOF
+  when: kafka_mode != 'singlenode_kafka1' and tps_val | int >= 250
+
+#- name: Configure zookeper.properties
+#  template: src="zookeeper.properties" dest="{{ deployment_base_path }}/{{ application_name }}_{{ kafka_version }}/config/zookeeper.properties"
+#  become_user: "{{ application_user }}"
+#  become: yes
+#  when: kafka_mode != 'singlenode_kafka1'
+
+- name: Configure zookeper_acl.properties
+  template: src="zookeeper_acl.properties" dest="{{ deployment_base_path }}/{{ application_name }}_{{ kafka_version }}/config/zookeeper.properties"
+  become_user: "{{ application_user }}"
+  become: yes
+  #when: ENABLE_ACL == 'true' and kafka_mode != 'singlenode_kafka1'
+
+- name: Configure zookeeper-server-start.sh
+  template: src="zookeeper-server-start.sh" dest="{{ deployment_base_path }}/{{ application_name }}_{{ kafka_version }}/bin/zookeeper-server-start.sh"
+  become_user: "{{ application_user }}"
+  become: yes
+  #when: ENABLE_ACL == 'true' and kafka_mode != 'singlenode_kafka1'
+
+- name: Giving executable permissions to zookeeper-server-start.sh file
+  shell: "chmod 0755 {{ deployment_base_path }}/{{ application_name }}_{{ kafka_version }}/bin/zookeeper-server-start.sh"
+  become: yes
+  #when: ENABLE_ACL == 'true' and kafka_mode != 'singlenode_kafka1'
+
+- name: Configure kafka-server-start.sh
+  template: src="kafka-server-start.sh" dest="{{ deployment_base_path }}/{{ application_name }}_{{ kafka_version }}/bin/kafka-server-start.sh"
+  become_user: "{{ application_user }}"
+  become: yes
+  #when: ENABLE_ACL == 'true' and kafka_mode != 'singlenode_kafka1'
+
+- name: Giving executable persmissions to kafka-server-start.sh file
+  shell: "chmod 0755 {{ deployment_base_path }}/{{ application_name }}_{{ kafka_version }}/bin/kafka-server-start.sh"
+  become: yes
+  #when: ENABLE_ACL == 'true' and kafka_mode != 'singlenode_kafka1'
+
+- name: Configure zookeeper_jaas.conf
+  template: src="zookeeper_jaas.conf" dest="{{ deployment_base_path }}/{{ application_name }}_{{ kafka_version }}/config/"
+  become_user: "{{ application_user }}"
+  become: yes
+  #when: ENABLE_ACL == 'true'
+
+- name: Configure kafka_server_jaas.conf
+  template: src="kafka_server_jaas.conf" dest="{{ deployment_base_path }}/{{ application_name }}_{{ kafka_version }}/config/"
+  become_user: "{{ application_user }}"
+  become: yes
+  #when: ENABLE_ACL == 'true'
+
+- name: Configure kafka_producer_jaas.conf
+  template: src="kafka_producer_jaas.conf" dest="{{ deployment_base_path }}/{{ application_name }}_{{ kafka_version }}/config/"
+  become_user: "{{ application_user }}"
+  become: yes
+  #when: ENABLE_ACL == 'true'
+
+- name: Configure kafka_consumer_jaas.conf
+  template: src="kafka_consumer_jaas.conf" dest="{{ deployment_base_path }}/{{ application_name }}_{{ kafka_version }}/config/"
+  become_user: "{{ application_user }}"
+  become: yes
+  #when: ENABLE_ACL == 'true'
+
+
+- name: Run pwd and capture the output
+  command: pwd
+  register: pwd_output
+
+- name: Display the working directory
+  debug:
+    var: pwd_output.stdout
+
+- name: Remove bootstrap.servers and security.protocol lines
+  lineinfile:
+    path: "./roles/kafka/templates/producer.properties"
+    regexp: '^(security.protocol=SASL_PLAINTEXT|bootstrap.servers={{ KAFKA_IP }}:9092)$'
+    state: absent
+  when: kafka_https_enabled == "true"
+
+- name: Add new Kafka configuration block
+  blockinfile:
+    path: "./roles/kafka/templates/producer.properties"
+    block: |
+      security.protocol=SASL_SSL
+      bootstrap.servers={{ kafka_service_ip }}:{{ kafka_port }}
+      ssl.endpoint.identification.algorithm=
+      ssl.truststore.location={{ deployment_base_path }}/{{ application_name }}_{{ kafka_version }}/config/ssl_certs/kafka_{{ PLATFORM_NAME }}_cert.jks
+      ssl.truststore.password=mobiquity
+      ssl.keystore.location={{ deployment_base_path }}/{{ application_name }}_{{ kafka_version }}/config/ssl_certs/kafka_{{ PLATFORM_NAME }}_cert.jks
+      ssl.keystore.password=mobiquity
+      ssl.key.password=mobiquity
+  delegate_to: localhost     
+  when: kafka_https_enabled == "true"
+
+- name: Configure producer.properties
+  template: src="producer.properties" dest="{{ deployment_base_path }}/{{ application_name }}_{{ kafka_version }}/config/"
+  become_user: "{{ application_user }}"
+  become: yes
+  #when: ENABLE_ACL == 'true' and kafka_mode != 'singlenode_kafka1'
+
+- name: Remove bootstrap.servers and security.protocol lines
+  lineinfile:
+    path: "./roles/kafka/templates/consumer.properties"
+    regexp: '^(security.protocol=SASL_PLAINTEXT|bootstrap.servers=localhost:9092)$'
+    state: absent
+  when: kafka_https_enabled == "true"      
+
+- name: Add new Kafka configuration block
+  blockinfile:
+    path: "./roles/kafka/templates/consumer.properties"
+    block: |
+      security.protocol=SASL_SSL
+      bootstrap.servers={{ kafka_service_ip }}:{{ kafka_port }}
+      ssl.endpoint.identification.algorithm= 
+      ssl.truststore.location={{ deployment_base_path }}/{{ application_name }}_{{ kafka_version }}/config/ssl_certs/kafka_{{ PLATFORM_NAME }}_cert.jks
+      ssl.truststore.password=mobiquity
+      ssl.keystore.location={{ deployment_base_path }}/{{ application_name }}_{{ kafka_version }}/config/ssl_certs/kafka_{{ PLATFORM_NAME }}_cert.jks
+      ssl.keystore.password=mobiquity
+      ssl.key.password=mobiquity
+  delegate_to: localhost
+  when: kafka_https_enabled == "true"        
+  
+- name: Configure consumer.properties
+  template: src="consumer.properties" dest="{{ deployment_base_path }}/{{ application_name }}_{{ kafka_version }}/config/"
+  become_user: "{{ application_user }}"
+  become: yes
+  #when: ENABLE_ACL == 'true' and kafka_mode != 'singlenode_kafka1'
+
+- name: Configure kafka_client_jaas.conf
+  template: src="kafka_client_jaas.conf" dest="{{ deployment_base_path }}/{{ application_name }}_{{ kafka_version }}/config/"
+  become_user: "{{ application_user }}"
+  become: yes
+  #when: ENABLE_ACL == 'true'
+
+- name: Configure ACL_rules.sh
+  template: src="ACL_rules.sh" dest="{{ deployment_base_path }}/{{ application_name }}_{{ kafka_version }}/config/"
+  become_user: "{{ application_user }}"
+  when: broker_id == 1
+  become: yes
+
+- name: Giving executable permissions to ACL_rules file
+  shell: "chmod 0755 {{ deployment_base_path }}/{{ application_name }}_{{ kafka_version }}/config/ACL_rules.sh"
+  become: yes
+  when: broker_id == 1
+
+#- name: Configure zookeper.properties
+#  template: src="zookeeper_singlenode.properties" dest="{{ deployment_base_path }}/{{ application_name }}_{{ kafka_version }}/config/zookeeper.properties"
+#  become_user: "{{ application_user }}"
+#  become: yes
+#  when: kafka_mode == 'singlenode_kafka1'
+
+- name: application user permission to kafka folder
+  shell: "chown -R {{ application_user }}:{{ application_user }} {{ deployment_base_path }}/{{ application_name }}_{{ kafka_version }}/"
+  become_user: "{{ application_user }}"
+  become: yes
+
+- name: Get all scripts files for kafka
+  find:
+    paths: "{{ deployment_base_path }}/{{ application_name }}_{{ kafka_version }}/bin/"
+    patterns: "*.sh"
+  register: selinux_files
+  become: yes
+
+- name: Check SELinux status
+  shell: getenforce
+  become: yes
+  register: selinux_status
+
+- name: Check SELinux context of .sh files
+  shell: "ls -Z {{ item.path }}"
+  register: selinux_context_output
+  loop: "{{ selinux_files.files }}"
+  when: selinux_status.stdout == 'Enforcing'
+
+- name: Display SELinux context of .sh files
+  debug:
+    msg: "{{ item.stdout }}"
+  loop: "{{ selinux_context_output.results }}"
+  when: selinux_status.stdout == 'Enforcing'
+
+- name: Change SELinux context to bin_t if not already set for kafka scripts
+  command: "chcon -t bin_t {{ item.item.path }}"
+  loop: "{{ selinux_context_output.results }}"
+  become: yes
+  when:
+    - selinux_status.stdout == 'Enforcing'
+    - "'bin_t' not in item.stdout"
+
+- name: Remove kafka logs
+  file: path="{{ kafka_log_path }}" state=absent
+  become: yes
+  ignore_errors: True
+
+- name: Remove zookeeper logs
+  file: path="{{ zookeeper_log_path }}" state=absent
+  become: yes
+  ignore_errors: True
+
+- name: Permission to kafka log path
+  file: path="{{ kafka_log_path }}" owner="{{ application_user }}" group="{{ application_user }}" state="directory" mode=0755
+  become: yes
+
+- name: Permission to zookeeper log path
+  file: path="{{ zookeeper_log_path }}" owner="{{ application_user }}" group="{{ application_user }}" state="directory" mode=0755
+  become: yes
+
+- name: Configure zookeper myid
+  template: src="myid" dest="{{ zookeeper_log_path }}/myid"
+  become_user: "{{ application_user }}"
+  become: yes
+
+-  debug: msg="Zookeeper server start"
+   notify: restart zookeeper service
+   changed_when: true
+
+-  debug: msg="Wait Zookeeper server start"
+   notify: wait for zookeeper
+   changed_when: true
+
+-  debug: msg="Kafka server start"
+   notify: restart kafka service
+   changed_when: true
+
+-  debug: msg="Wait kafka server start"
+   notify: wait for kafka
+   changed_when: true
+
+-  debug: msg="Create kafka txn topics"
+   notify: create txn topic
+   changed_when: true
+   when: broker_id == 1
+
+-  debug: msg="Create notification topics"
+   notify: create notification topic
+   changed_when: true
+   when: broker_id == 1
+
+- debug: msg="Create Daily statement users topic"
+  notify: create daily stmt users topic
+  changed_when: true
+  when: broker_id == 1
+
+- debug: msg="Create Daily statement topic"
+  notify: create daily stmt topic
+  changed_when: true
+  when: broker_id == 1
+
+- debug: msg="Create Request Downstream Events topic"
+  notify: create downstreamevents topic
+  changed_when: true
+  when: broker_id == 1
+
+- debug: msg="Create notificationfcmpush topic"
+  notify: create notificationfcmpush topic
+  changed_when: true
+  when: broker_id == 1
+
+- debug: msg="Create notificationpost topic"
+  notify: create notificationpost topic
+  changed_when: true
+  when: broker_id == 1
+
+- debug: msg="Create notificationsms topic"
+  notify: create notificationsms topic
+  changed_when: true
+  when: broker_id == 1
+
+- debug: msg="Create notificationurl topic"
+  notify: create notificationurl topic
+  changed_when: true
+  when: broker_id == 1
+
+- debug: msg="Create eventsinktracker topic"
+  notify: create eventsinktracker topic
+  changed_when: true
+  when: broker_id == 1
+
+- debug: msg="Create kafka events topics"
+  notify: create events topic
+  changed_when: true
+  when: broker_id == 1
+
+- debug: msg="Create kafka newevents topics"
+  notify: create newevents topic
+  changed_when: true
+  when: broker_id == 1
+
+- debug: msg="Create ordernpayin topics"
+  notify: create ordernpayin topic
+  changed_when: true
+  when: broker_id == 1
+
+- debug: msg="Create ordernpayout topics"
+  notify: create ordernpayout topic
+  changed_when: true
+  when: broker_id == 1
+
+- debug: msg="Create svabalances topics"
+  notify: create svabalances topic
+  changed_when: true
+  when: broker_id == 1
+
+- debug: msg="Create walletminbalances topics"
+  notify: create walletminbalances topic
+  changed_when: true
+  when: broker_id == 1
+
+- debug: msg="Create sfm.transaction topics"
+  notify: create sfm.transaction topic
+  changed_when: true
+
+- debug: msg="Create sfm.orderandpay topics"
+  notify: create sfm.orderandpay topic
+  changed_when: true
+
+- debug: msg="Create sfm.registration topics"
+  notify: create sfm.registration topic
+  changed_when: true
+
+- debug: msg="Create sfm.deregistration topics"
+  notify: create sfm.deregistration topic
+  changed_when: true
+
+- debug: msg="Create sfm.UPGRADEKYC topics"
+  notify: create sfm.UPGRADEKYC topic
+  changed_when: true
+
+- debug: msg="Create sfm.BANKLINKING topics"
+  notify: create sfm.BANKLINKING topic
+  changed_when: true
+
+- debug: msg="Create sfm.BANKDELINKING topics"
+  notify: create sfm.BANKDELINKING topic
+  changed_when: true
+
+- debug: msg="Create notificationposttop topics"
+  notify: create notificationposttop topic
+  changed_when: true
+  when: broker_id == 1
+
+- debug: msg="Create notificationpostlow topics"
+  notify: create notificationpostlow topic
+  changed_when: true
+  when: broker_id == 1
+
+- debug: msg="Create notificationsmslow topics"
+  notify: create notificationsmslow topic
+  changed_when: true
+  when: broker_id == 1
+
+- debug: msg="Create notificationsmstop topics"
+  notify: create notificationsmstop topic
+  changed_when: true
+  when: broker_id == 1
+
+- debug: msg="Create notificationurllow topics"
+  notify: create notificationurllow topic
+  changed_when: true
+  when: broker_id == 1
+
+- debug: msg="Create notificationurltop topics"
+  notify: create notificationurltop topic
+  changed_when: true
+  when: broker_id == 1
+
+- debug: msg="Create notificationfcmpushtop topics"
+  notify: create notificationfcmpushtop topic
+  changed_when: true
+  when: broker_id == 1
+
+- debug: msg="Create notificationfcmpushlow topics"
+  notify: create notificationfcmpushlow topic
+  changed_when: true
+  when: broker_id == 1
+
+- debug: msg="Create budsusagedata topics"
+  notify: create budsusagedata topic
+  changed_when: true
+  when: broker_id == 1
+
+- debug: msg="Create kafka newevents topics"
+  notify: create newevents topic
+  changed_when: true
+  when: broker_id == 1
+
+- debug: msg="Create kafka usermangementevents topics"
+  notify: create usermangementevents topic
+  changed_when: true
+  when: broker_id == 1
+
+- debug: msg="Create kafka financialtransactionevents topics"
+  notify: create financialtransactionevents topic
+  changed_when: true
+  when: broker_id == 1
+
+- debug: msg="Create kafka audittraildump topics"
+  notify: create audittraildump topic
+  changed_when: true
+  when: broker_id == 1
+
+- debug: msg="Create kafka audittrailevents topics"
+  notify: create audittrailevents topic
+  changed_when: true
+  when: broker_id == 1
+
+- debug: msg="Create kafka kafkaheartbeat topics"
+  notify: create kafkaheartbeat topic
+  changed_when: true
+  when: broker_id == 1
+
+- debug: msg="Create kafka txns_retry topics"
+  notify: create txns_retry topic
+  changed_when: true
+  when: broker_id == 1
+
+- debug: msg="Create kafka txns_dlt topics"
+  notify: create txns_dlt topic
+  changed_when: true
+  when: broker_id == 1
+
+- debug: msg="executing ACL_rules script"
+  notify: executing ACL_rules script
+  changed_when: true
+  when: broker_id == 1
+
+- include_tasks: rsyslog_app.yml
+  when: rsyslog_required == 'true'
